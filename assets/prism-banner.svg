@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="222.4846mm"
+   height="69.994179mm"
+   viewBox="0 0 222.4846 69.994179"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   sodipodi:docname="prism-banner.svg"
+   inkscape:export-filename="prism-banner.png"
+   inkscape:export-xdpi="400"
+   inkscape:export-ydpi="400"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="1"
+     inkscape:cx="612.5"
+     inkscape:cy="208"
+     inkscape:window-width="1440"
+     inkscape:window-height="938"
+     inkscape:window-x="-6"
+     inkscape:window-y="-6"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="g13" />
+  <defs
+     id="defs1">
+    <rect
+       x="308"
+       y="-118"
+       width="892"
+       height="698"
+       id="rect4" />
+    <rect
+       x="422.25"
+       y="238.25"
+       width="569.74431"
+       height="30.795942"
+       id="rect2" />
+    <rect
+       x="376"
+       y="151"
+       width="394"
+       height="113.54493"
+       id="rect1" />
+    <rect
+       x="308"
+       y="-118"
+       width="892"
+       height="698"
+       id="rect13" />
+    <rect
+       x="376"
+       y="151"
+       width="394"
+       height="113.54493"
+       id="rect14" />
+    <rect
+       x="422.25"
+       y="238.25"
+       width="569.74431"
+       height="30.795942"
+       id="rect15" />
+  </defs>
+  <g
+     inkscape:label="图层 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-5.8045706)">
+    <g
+       inkscape:label="图层 1 复制"
+       inkscape:groupmode="layer"
+       id="g13">
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,-57.671662,3.1323177)"
+         id="text4"
+         style="font-size:400px;font-family:'DejaVu Math TeX Gyre';-inkscape-font-specification:'DejaVu Math TeX Gyre';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect4);display:inline;fill:#98ace1;fill-opacity:0.224959;stroke-width:37.7953"><tspan
+           x="308"
+           y="248.8"
+           id="tspan3"><tspan
+             style="font-weight:600;font-family:'Linux Libertine G';-inkscape-font-specification:'Linux Libertine G, Semi-Bold'"
+             id="tspan2">0.1.0</tspan></tspan></text>
+      <path
+         d="M 17.119125,40.34224 5.8045706,43.840735 v 16.099276 z"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:10"
+         id="path3" />
+      <path
+         id="path4"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:60"
+         d="m 66.748137,45.617887 14.07356,24.37629 H 100.6856 Z" />
+      <path
+         d="M 24.323854,27.863416 5.8045706,33.499247 v 7.07037 l 13.4467244,-3.920174 0.953947,-1.652096 z"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:10"
+         id="path5" />
+      <path
+         d="M 5.8045706,0 V 30.910258 L 26.064316,24.848612 40.410727,0 Z"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:10"
+         id="path6" />
+      <path
+         id="path7"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:75.9375"
+         d="M 228.28918,0 H 75.016883 40.410727 L 51.771791,19.677869 228.28918,38.231258 Z" />
+      <path
+         d="M 75.016883,69.994177 60.564019,44.960563 22.588559,40.9236 5.8045706,69.994177 Z"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:10"
+         id="path8" />
+      <path
+         d="m 29.739027,28.53831 -4.280359,7.413501 28.08149,-3.156397 -0.803568,-1.392163 z"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:10"
+         id="path9" />
+      <path
+         d="M 40.410727,10.054167 32.631874,23.527763 46.571075,20.7238 Z"
+         style="fill:#ffffff;fill-opacity:1;stroke-width:10"
+         id="path10"
+         inkscape:label="path84" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.40791658,0,0,0.40791658,-43.345178,-25.266248)"
+         id="text11"
+         style="font-style:italic;font-variant:normal;font-weight:600;font-stretch:normal;font-size:62.2676px;font-family:'Linux Libertine G';-inkscape-font-specification:'Linux Libertine G, Semi-Bold Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect14);display:inline;fill:#ffffff;fill-opacity:1;stroke-width:37.7953"><tspan
+           x="376"
+           y="207.61085"
+           id="tspan5"><tspan
+             style="font-style:normal;font-weight:bold;-inkscape-font-specification:'Linux Libertine G, Bold'"
+             id="tspan4">pacPrism</tspan></tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,6.026596,-2.4852662)"
+         id="text13"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:'Linux Libertine G';-inkscape-font-specification:'Linux Libertine G, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect15);display:inline;fill:#ffffff;fill-opacity:1;stroke-width:37.7953"><tspan
+           x="422.25"
+           y="249.15985"
+           id="tspan11"><tspan
+             style="font-style:italic;-inkscape-font-specification:'Linux Libertine G, Bold Italic'"
+             id="tspan10">A semi-decentralized package distribution system for Debian GNU/Linux</tspan></tspan></text>
+    </g>
+    <path
+       d="M 17.119125,40.34224 5.8045706,43.840735 v 16.099276 z"
+       style="fill:#44599e;fill-opacity:0.774869;stroke-width:10"
+       id="path89" />
+    <path
+       id="path1"
+       style="fill:#44599e;fill-opacity:0.774869;stroke-width:60"
+       d="m 66.748137,45.617887 14.07356,24.37629 H 100.6856 Z" />
+    <path
+       d="M 24.323854,27.863416 5.8045706,33.499247 v 7.07037 l 13.4467244,-3.920174 0.953947,-1.652096 z"
+       style="fill:#44599e;fill-opacity:0.774869;stroke-width:10"
+       id="path86" />
+    <path
+       d="M 5.8045706,0 V 30.910258 L 26.064316,24.848612 40.410727,0 Z"
+       style="fill:#44599e;fill-opacity:0.774869;stroke-width:10"
+       id="path75" />
+    <path
+       id="path76-1"
+       style="fill:#44599e;fill-opacity:0.774869;stroke-width:75.9375"
+       d="M 228.28918,0 H 75.016883 40.410727 L 51.771791,19.677869 228.28918,38.231258 Z" />
+    <path
+       d="M 75.016883,69.994177 60.564019,44.960563 22.588559,40.9236 5.8045706,69.994177 Z"
+       style="fill:#3639aa;fill-opacity:0.7764706;stroke-width:10"
+       id="path82" />
+    <path
+       d="m 29.739027,28.53831 -4.280359,7.413501 28.08149,-3.156397 -0.803568,-1.392163 z"
+       style="fill:#3639aa;fill-opacity:0.7764706;stroke-width:10"
+       id="path88" />
+    <path
+       d="M 40.410727,10.054167 32.631874,23.527763 46.571075,20.7238 Z"
+       style="fill:#3639aa;fill-opacity:0.7764706;stroke-width:10"
+       id="path84"
+       inkscape:label="path84" />
+    <text
+       xml:space="preserve"
+       transform="matrix(0.40791658,0,0,0.40791658,-43.345178,-25.266248)"
+       id="text1"
+       style="font-style:italic;font-variant:normal;font-weight:600;font-stretch:normal;font-size:62.2676px;font-family:'Linux Libertine G';-inkscape-font-specification:'Linux Libertine G, Semi-Bold Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect1);display:inline;fill:#3739aa;fill-opacity:0.776471;stroke-width:37.7953"><tspan
+         x="376"
+         y="207.61085"
+         id="tspan13"><tspan
+           style="font-style:normal;font-weight:bold;-inkscape-font-specification:'Linux Libertine G, Bold'"
+           id="tspan12">pacPrism</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,6.026596,-2.4852662)"
+       id="text2"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:12px;font-family:'Linux Libertine G';-inkscape-font-specification:'Linux Libertine G, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect2);display:inline;fill:#43599d;fill-opacity:0.776471;stroke-width:37.7953"><tspan
+         x="422.25"
+         y="249.15985"
+         id="tspan15"><tspan
+           style="font-style:italic;-inkscape-font-specification:'Linux Libertine G, Bold Italic'"
+           id="tspan14">A semi-decentralized package distribution system for Debian GNU/Linux</tspan></tspan></text>
+  </g>
+  <metadata
+     id="metadata57">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by/4.0/" />
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by/4.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>
