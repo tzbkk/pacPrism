@@ -6,7 +6,7 @@ void dht_operation::store_entry(dht_entry entry) {
     // Whether the entry exist. If not, store a new entry.
     if (map_node_ip_to_stored_entries_index.find(entry.node_ip) == map_node_ip_to_stored_entries_index.end()) {
         // Update map.
-        map_node_ip_to_stored_entries_index[entry.node_ip] = stored_entries.size() - 1;
+        map_node_ip_to_stored_entries_index[entry.node_ip] = static_cast<int>(stored_entries.size() - 1);
         // Push the new entry.
         dht_operation::stored_entries.push_back(std::move(entry));
     }
