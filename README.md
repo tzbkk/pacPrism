@@ -4,6 +4,8 @@
 
 > A semi-decentralized package distribution system for Debian GNU/Linux
 
+[中文版本](README_zh.md)
+
 ## Overview
 
 pacPrism is a revolutionary package distribution system that addresses the fundamental limitations of traditional "center-mirror" software distribution models. By combining **access-layer centralization** with **data-layer decentralization**, pacPrism delivers enhanced reliability, reduced latency, and lower operational costs while maintaining complete compatibility with existing Debian package management tools.

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>pacPrism - Semi-decentralized Package Distribution System</title>
+    <title>pacPrism - 半去中心化软件包分发系统</title>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -21,7 +21,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif;
             line-height: 1.6;
             color: var(--text-color);
             background: var(--light-bg);
@@ -34,7 +34,10 @@
         }
 
         header {
-            position: relative;
+            background: var(--primary-color);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
         }
 
         .language-switcher {
@@ -57,21 +60,6 @@
 
         .language-btn:hover {
             background: rgba(255, 255, 255, 0.3);
-        }
-
-        @media (max-width: 768px) {
-            .language-switcher {
-                position: static;
-                text-align: center;
-                margin-bottom: 1rem;
-            }
-        }
-
-        header {
-            background: var(--primary-color);
-            color: white;
-            padding: 2rem 0;
-            text-align: center;
         }
 
         .hero {
@@ -159,6 +147,12 @@
             .features {
                 grid-template-columns: 1fr;
             }
+
+            .language-switcher {
+                position: static;
+                text-align: center;
+                margin-bottom: 1rem;
+            }
         }
     </style>
 </head>
@@ -166,11 +160,11 @@
     <header>
         <div class="container">
             <div class="language-switcher">
-                <a href="index_zh.html" class="language-btn">中文</a>
+                <a href="index.html" class="language-btn">English</a>
             </div>
             <img src="../assets/prism.svg" alt="pacPrism Logo" style="height: 80px; margin-bottom: 1rem;">
             <h1>pacPrism</h1>
-            <p>Semi-decentralized Package Distribution for Debian GNU/Linux</p>
+            <p>面向 Debian GNU/Linux 的半去中心化软件包分发</p>
         </div>
     </header>
 
@@ -178,83 +172,83 @@
         <section class="hero">
             <img src="../assets/prism-banner.svg" alt="pacPrism Banner" style="max-width: 100%; height: auto; margin-bottom: 2rem;">
             <h1>pacPrism</h1>
-            <p class="subtitle">Revolutionary Hybrid Package Distribution</p>
-            <p>pacPrism addresses the fundamental limitations of traditional "center-mirror" software distribution by combining <strong>access-layer centralization</strong> with <strong>data-layer decentralization</strong>, delivering enhanced reliability, reduced latency, and lower operational costs.</p>
+            <p class="subtitle">革命性的混合软件包分发</p>
+            <p>pacPrism 通过结合<strong>访问层集中化</strong>与<strong>数据层去中心化</strong>，解决了传统"中心-镜像"软件分发的基本限制，提供增强的可靠性、降低的延迟和更低的运营成本。</p>
         </section>
 
         <section class="features">
             <div class="feature-card">
-                <h3>🧠 Intelligent Gateway Clusters</h3>
-                <p>Centralized access layer provides unified external services, intelligent scheduling, and automatic fallback to official sources when needed.</p>
+                <h3>🧠 智能网关集群</h3>
+                <p>集中化访问层提供统一的外部服务、智能调度，并在需要时自动回退到官方源。</p>
             </div>
 
             <div class="feature-card">
-                <h3>💪 Resilient Peer Network</h3>
-                <p>Decentralized data layer with DHT + Gossip protocols distributes packages among server nodes for load distribution and redundancy.</p>
+                <h3>💪 弹性对等网络</h3>
+                <p>采用 DHT + Gossip 协议的去中心化数据层在服务器节点间分发软件包，实现负载分配和冗余。</p>
             </div>
 
             <div class="feature-card">
-                <h3>🛡️ Security-First Design</h3>
-                <p>All content verified against official source signatures. Virtue-driven node evaluation based on reliability, contribution, and local reputation.</p>
+                <h3>🛡️ 安全优先设计</h3>
+                <p>所有内容都经过官方源签名验证。基于可靠性、贡献度和本地声誉的德性驱动节点评估。</p>
             </div>
 
             <div class="feature-card">
-                <h3>⚡ Active Anti-Fragility</h3>
-                <p>Heartbeat mechanisms, IPv6 multicast optimization, and graceful degradation ensure system resilience and seamless user experience.</p>
+                <h3>⚡ 主动抗脆弱性</h3>
+                <p>心跳机制、IPv6 多播优化和优雅降级确保系统弹性并提供无缝用户体验。</p>
             </div>
         </section>
 
         <section class="cta-section">
-            <h2>Get Started with pacPrism</h2>
-            <p>Experience the future of package management on Debian systems</p>
+            <h2>开始使用 pacPrism</h2>
+            <p>在 Debian 系统上体验软件包管理的未来</p>
             <div style="margin-top: 2rem;">
-                <a href="https://github.com/tzbkk/pacPrism" class="btn">View on GitHub</a>
+                <a href="https://github.com/tzbkk/pacPrism" class="btn">在 GitHub 上查看</a>
             </div>
         </section>
 
         <section>
-            <h2>Quick Start</h2>
+            <h2>快速开始</h2>
             <div class="code-block">
-                # Clone the repository<br>
+                # 克隆仓库<br>
                 git clone https://github.com/tzbkk/pacPrism.git<br>
                 cd pacPrism<br><br>
-                # Build the project<br>
+                # 构建项目<br>
                 cmake -B build<br>
                 cmake --build build<br><br>
-                # Run pacPrism<br>
+                # 运行 pacPrism<br>
                 ./build/bin/pacprism
             </div>
         </section>
 
         <section>
-            <h2>Architecture Overview</h2>
-            <p>pacPrism employs a revolutionary hybrid architecture that combines the best of centralized and decentralized approaches:</p>
+            <h2>架构概述</h2>
+            <p>pacPrism 采用革命性的混合架构，结合了集中化和去中心化方法的优势：</p>
             <ul style="margin: 1rem 0 1rem 2rem;">
-                <li><strong>Gateway Cluster</strong> - The "Intelligent Brain" providing unified access and intelligent scheduling</li>
-                <li><strong>Peer Nodes</strong> - The "Backbone Muscles" storing and distributing package replicas</li>
-                <li><strong>DHT & Gossip Network</strong> - The "Neural Network" for efficient file location and state propagation</li>
-                <li><strong>Official Sources</strong> - The "Trust Anchor" ensuring content authenticity and integrity</li>
+                <li><strong>网关集群</strong> - "智能大脑"，提供统一访问和智能调度</li>
+                <li><strong>对等节点</strong> - "骨干肌肉"，存储和分发软件包副本</li>
+                <li><strong>DHT & Gossip 网络</strong> - "神经网络"，用于高效文件定位和状态传播</li>
+                <li><strong>官方源</strong> - "信任锚点"，确保内容真实性和完整性</li>
             </ul>
         </section>
 
         <section>
-            <h2>Project Status</h2>
-            <p>pacPrism is currently in active development. The core architecture is being built with C++23 and modern CMake practices.</p>
+            <h2>项目状态</h2>
+            <p>pacPrism 目前正在积极开发中。核心架构正在使用 C++23 和现代 CMake 实践构建。</p>
             <ul style="margin: 1rem 0 1rem 2rem;">
-                <li>✅ CMake build system configured</li>
-                <li>✅ Basic project structure established</li>
-                <li>🔄 DHT network implementation in progress</li>
-                <li>📋 Gateway cluster development planned</li>
-                <li>📋 Security verification mechanisms planned</li>
-                <li>📋 Node evaluation system planned</li>
+                <li>✅ CMake 构建系统已配置</li>
+                <li>✅ 基本项目结构已建立</li>
+                <li>🔄 DHT 网络实现进行中</li>
+                <li>📋 网关集群开发计划中</li>
+                <li>📋 安全验证机制计划中</li>
+                <li>📋 节点评估系统计划中</li>
             </ul>
         </section>
     </main>
 
     <footer>
         <div class="container">
-            <p>&copy; 2025 pacPrism Project. Licensed under GPLv3.</p>
-            <p>Built with C++23 and modern CMake</p>
+            <p>&copy; 2025 pacPrism 项目。基于 GPLv3 许可证。</p>
+            <p>使用 C++23 和现代 CMake 构建</p>
         </div>
     </footer>
 </body>
