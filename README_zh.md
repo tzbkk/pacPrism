@@ -1,6 +1,6 @@
 # pacPrism
 
-![pacPrism Logo](assets/prism.svg)
+![pacPrism Banner](assets/prism-banner.svg)
 
 > 面向 Debian GNU/Linux 的半去中心化软件包分发系统
 
