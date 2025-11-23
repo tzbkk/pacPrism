@@ -10,6 +10,7 @@ void dht_operation::store_entry(dht_entry entry) {
         // Push the new entry.
         dht_operation::stored_entries.push_back(std::move(entry));
     }
+
     // If exist, check the timestamp. Store the newer one.
     else {
         // Get the index of the entry.
@@ -26,9 +27,11 @@ void dht_operation::store_entry(dht_entry entry) {
 // Query an entry by node_ip.
 dht_entry dht_operation::query_entry(const std::string& node_ip) const {
     auto query_result = map_node_ip_to_stored_entries_index.find(node_ip);
+
     if (query_result != map_node_ip_to_stored_entries_index.end()) {
         return stored_entries[query_result->second];
     }
+
     return dht_entry{};
 }
 
@@ -51,6 +54,25 @@ std::vector<dht_entry> dht_operation::query_entry(const sharding& sharding_query
 }
 
 // Remove entry from the vector stored_entries.
-void dht_operation::remove_entry(std::string node_ip) {
-    
+void dht_operation::remove_entry(const std::string& node_ip) {
+    // Query the index to remove.
+    auto query_result = map_node_ip_to_stored_entries_index.find(node_ip);
+
+    // Remove if exist.
+    if (query_result != map_node_ip_to_stored_entries_index.end()) {
+        int index_to_remove = query_result->second;
+
+        // Remove from stored_entries
+        stored_entries.erase(stored_entries.begin() + index_to_remove);
+
+        // Remove from map
+        map_node_ip_to_stored_entries_index.erase(node_ip);
+
+        // Update indices in map for entries after the removed one
+        for (auto& pair : map_node_ip_to_stored_entries_index) {
+            if (pair.second > index_to_remove) {
+                pair.second--;
+            }
+        }
+    }
 }
