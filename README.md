@@ -2,17 +2,75 @@
 
 > A semi-decentralized package distribution system for Debian GNU/Linux
 
-## Description
+## Overview
 
-pacPrism is a modern package distribution system that combines the reliability of centralized repositories with the resilience of peer-to-peer networks. Built with C++23 and leveraging Distributed Hash Table (DHT) technology, pacPrism provides enhanced package delivery while maintaining compatibility with existing Debian package management tools.
+pacPrism is a revolutionary package distribution system that addresses the fundamental limitations of traditional "center-mirror" software distribution models. By combining **access-layer centralization** with **data-layer decentralization**, pacPrism delivers enhanced reliability, reduced latency, and lower operational costs while maintaining complete compatibility with existing Debian package management tools.
 
-## Features
+### Core Philosophy
 
-- **Semi-decentralized Architecture**: Uses DHT for resilient package distribution
-- **Fast Package Delivery**: Download from multiple sources simultaneously
-- **Enhanced Reliability**: Continue operations when central repositories are unavailable
-- **Backward Compatible**: Works with existing Debian package management tools
-- **Modern C++23**: Built with modern C++ standards and CMake
+- **User Experience First**: Completely transparent to end users - simply modify `sources.list` to point to pacPrism gateway, no additional clients or plugins required
+- **Aristotelian Virtue Ethics**: Implements a "virtue-driven" node evaluation mechanism based on reliability, contribution, and local reputation, avoiding blockchain-style global ledgers
+- **Extensible Vision**: Designed to eventually support any binary artifact distribution (Docker images, npm packages, etc.), particularly benefiting network-constrained or bandwidth-expensive regions
+
+## Architecture
+
+### Hybrid Architecture Model
+
+pacPrism employs a **"centralized access layer + decentralized data layer"** hybrid approach:
+
+- **Access Layer (Centralized)**: **Gateway clusters** provide unified external services as the sole user entry point, ensuring compatibility and control
+- **Data Layer (Decentralized)**: **P2P network** (DHT + Gossip) distributes `.deb` packages and metadata among server nodes, achieving load distribution and redundancy tolerance
+
+### Core Components
+
+#### 1. Gateway Cluster (The "Intelligent Brain")
+- Receives HTTP/HTTPS requests from APT clients (simulating official repository behavior)
+- Queries DHT to obtain available node lists for target files
+- Performs intelligent scheduling based on node weight, latency, reputation
+- Automatically falls back to official sources when P2P network is unresponsive
+- Provides TLS termination, rate limiting, log auditing, and other operational capabilities
+
+#### 2. Peer Nodes (The "Backbone Muscles")
+- Store partial or complete Debian package replicas
+- Participate in DHT routing and Gossip protocol propagation
+- Respond to file requests from gateways or other nodes
+- Report heartbeat and local status (for anti-fragility mechanisms)
+
+#### 3. DHT & Gossip Network (The "Neural Network")
+- **DHT (Distributed Hash Table)**: Efficient file location (Key = package name/hash, Value = node address list)
+- **Gossip Protocol**: Propagates node join/exit, health status, local reputation updates
+- **Dual DHT System**: Separate DHTs for lightweight nodes (low storage, high availability) and heavyweight nodes (high capacity, stable contribution)
+
+#### 4. Official Sources (The "Trust Anchor")
+- Serves as the ultimate fallback source, ensuring content authenticity and integrity
+- Provides initial metadata (`Packages.gz`, `Release` files) for verification
+- All content from P2P network must pass verification against official source signatures
+
+## Key Mechanisms
+
+### Security-First Design
+- All transmitted content must pass signature verification from official sources
+- Gateways do not cache unverified content, preventing contamination spread
+- Node identities can be authenticated via certificates or pre-shared keys (PSK)
+
+### Active Anti-Fragility
+- **Heartbeat Mechanism**: Nodes regularly report status, gateways dynamically adjust routing weights
+- **IPv6 Optimization**: Leverages IPv6 multicast for node discovery, reducing central registration dependency
+- **Graceful Degradation**: Seamless fallback to official sources when P2P is unavailable, transparent to users
+
+### Virtue-Driven Node Evaluation
+- No global blockchain records; based on:
+  - **Local Reputation** (historical behavior evaluations from neighbor nodes)
+  - **Verifiable Contribution** (successful valid file deliveries count/byte count)
+  - **Implicit Weight** (online duration, bandwidth stability, etc.)
+- Weights used for DHT routing priority and gateway scheduling decisions
+
+## Technology Stack
+
+- **Core System** (gateways, node logic, DHT/Gossip protocols): **C++**
+  → Pursuing high performance, low latency, fine-grained memory control
+- **Toolchain & Auxiliary Services** (monitoring, configuration management, test scripts): **Go**
+  → Rapid development, concurrency-friendly, simple deployment
 
 ## Installation
 
@@ -37,21 +95,6 @@ cmake --build build
 ./build/bin/pacprism
 ```
 
-## Usage
-
-pacPrism is currently in active development. The core architecture is being implemented with plans to integrate with existing Debian package management workflows.
-
-## Project Structure
-
-```
-pacPrism/
-├── CMakeLists.txt          # Root CMake configuration
-├── src/                    # Main application source
-├── lib/                    # Library components
-├── include/                # Header files
-└── docs/                   # Documentation and GitHub Pages
-```
-
 ## Development
 
 ### Building Specific Targets
@@ -67,11 +110,23 @@ cmake --build build --target network_dht
 cmake --build build --target clean
 ```
 
-### Architecture
+### Project Structure
 
-- **Main Application** (`src/main.cpp`): Entry point for the pacPrism executable
-- **Network DHT Library** (`lib/network/dht/`): Distributed Hash Table implementation
-- **Shared Library** (`network_dht`): Modular library for networking components
+```
+pacPrism/
+├── CMakeLists.txt          # Root CMake configuration
+├── src/                    # Main application source
+├── lib/                    # Library components
+├── include/                # Header files
+└── docs/                   # Documentation and GitHub Pages
+```
+
+## Future Roadmap
+
+- Support for additional distributions (Ubuntu, Arch, etc.)
+- Content prefetching and intelligent caching strategies
+- Visual topology and contribution leaderboards to incentivize node participation
+- Exploration of interoperability with IPFS or BitTorrent protocols
 
 ## License
 
