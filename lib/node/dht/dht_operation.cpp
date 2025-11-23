@@ -1,14 +1,17 @@
 #include "node/dht/dht_operation.h"
 #include <vector>
+#include <chrono>
 
 // Store entry to the vector stored_entries.
 void dht_operation::store_entry(dht_entry entry) {
     // Whether the entry exist. If not, store a new entry.
     if (map_node_ip_to_stored_entries_index.find(entry.node_ip) == map_node_ip_to_stored_entries_index.end()) {
-        // Update map.
-        map_node_ip_to_stored_entries_index[entry.node_ip] = static_cast<int>(stored_entries.size() - 1);
-        // Push the new entry.
+        // Push the new entry first.
         dht_operation::stored_entries.push_back(std::move(entry));
+        // Update map with correct index.
+        map_node_ip_to_stored_entries_index[entry.node_ip] = static_cast<int>(stored_entries.size() - 1);
+        // Update pair.
+        ttl_entries.insert({entry.entry_timestamp + entry.node_ttl, entry.node_ip});
     }
 
     // If exist, check the timestamp. Store the newer one.
@@ -17,9 +20,14 @@ void dht_operation::store_entry(dht_entry entry) {
         int stored_entry_index = map_node_ip_to_stored_entries_index[entry.node_ip];
         // Check the timestamp and update.
         if (stored_entries[stored_entry_index].entry_timestamp < entry.entry_timestamp) {
+            // Remove old TTL entry
+            ttl_entries.erase({stored_entries[stored_entry_index].entry_timestamp + stored_entries[stored_entry_index].node_ttl, stored_entries[stored_entry_index].node_ip});
+            // Update stored entry directly
             stored_entries[stored_entry_index].node_sharding = entry.node_sharding;
             stored_entries[stored_entry_index].entry_timestamp = entry.entry_timestamp;
             stored_entries[stored_entry_index].node_ttl = entry.node_ttl;
+            // Add new TTL entry
+            ttl_entries.insert({entry.entry_timestamp + entry.node_ttl, entry.node_ip});
         }
     }
 }
@@ -62,6 +70,15 @@ void dht_operation::remove_entry(const std::string& node_ip) {
     if (query_result != map_node_ip_to_stored_entries_index.end()) {
         int index_to_remove = query_result->second;
 
+        // Remove from ttl_entries
+        for (auto it = ttl_entries.begin(); it != ttl_entries.end(); ) {
+            if (it->second == node_ip) {
+                it = ttl_entries.erase(it);
+            } else {
+                ++it;
+            }
+        }
+
         // Remove from stored_entries
         stored_entries.erase(stored_entries.begin() + index_to_remove);
 
@@ -73,6 +90,24 @@ void dht_operation::remove_entry(const std::string& node_ip) {
             if (pair.second > index_to_remove) {
                 pair.second--;
             }
+        }
+    }
+}
+
+// Clean expired DHT entry.
+void dht_operation::clean_by_ttl() {
+    // Get current timestamp
+    auto now_sec = std::chrono::duration_cast<std::chrono::seconds>(
+        std::chrono::system_clock::now().time_since_epoch()
+    ).count();
+    // Remove expired entries and pairs.
+    auto it = ttl_entries.begin();
+    while (it != ttl_entries.end()) {
+        if (it->first <= now_sec) {
+            dht_operation::remove_entry(it->second);
+            it = ttl_entries.erase(it);
+        } else {
+            break; // set is sorted, remaining entries are not expired
         }
     }
 }
