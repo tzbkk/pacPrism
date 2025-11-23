@@ -20,7 +20,7 @@ class dht_operation {
         void store_entry(dht_entry entry);
         dht_entry query_entry(const std::string& node_ip) const;
         std::vector<dht_entry> query_entry(const sharding& sharding_querying) const;
-        void remove_entry(std::string node_ip);
+        void remove_entry(const std::string& node_ip);
 };
 
 #endif
