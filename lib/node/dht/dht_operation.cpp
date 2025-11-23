@@ -34,7 +34,20 @@ dht_entry dht_operation::query_entry(const std::string& node_ip) const {
 
 // Query entries by sharding.
 std::vector<dht_entry> dht_operation::query_entry(const sharding& sharding_querying) const {
+    std::vector<dht_entry> result;
 
+    // Iterate through all stored entries
+    for (const auto& entry : stored_entries) {
+        // Check if this entry contains the queried sharding
+        for (const auto& shard : entry.node_sharding) {
+            if (shard.sharding_id == sharding_querying.sharding_id) {
+                result.push_back(entry);
+                break; // No need to check other shards in this entry
+            }
+        }
+    }
+
+    return result;
 }
 
 // Remove entry from the vector stored_entries.
