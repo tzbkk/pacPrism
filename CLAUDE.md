@@ -20,7 +20,7 @@ The system follows a "centralized access layer + decentralized data layer" hybri
 ### Building the Project
 
 ```bash
-# Configure the project
+# Configure the project (automatically handles dependencies)
 cmake -B build
 
 # Build the entire project
@@ -33,6 +33,14 @@ cmake --build build --target node_dht
 # Clean build
 cmake --build build --target clean
 ```
+
+### Automatic Dependency Management
+
+The build system automatically handles dependency installation:
+- **asio** library is automatically fetched and configured if not found locally
+- Works seamlessly across Windows and Linux platforms
+- Maintains compatibility with existing dependency management approaches
+- No manual dependency installation required for new developers
 
 ### Running the Application
 
