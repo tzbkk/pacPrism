@@ -22,9 +22,27 @@ endif()
 # -----------------------------------------------------------------------------
 # External Dependencies
 # -----------------------------------------------------------------------------
-# Find required packages for the project
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(ASIO REQUIRED IMPORTED_TARGET asio)
+# Network functionality is mandatory
+# Try to find asio package (works with vcpkg and system installs)
+find_package(asio QUIET)
+
+if(NOT asio_FOUND)
+    # Try pkg-config as fallback
+    find_package(PkgConfig QUIET)
+    if(PkgConfig_FOUND)
+        pkg_check_modules(ASIO IMPORTED_TARGET asio)
+        if(ASIO_FOUND)
+            # Create imported target alias for consistency
+            add_library(asio::asio INTERFACE IMPORTED)
+            set_target_properties(asio::asio PROPERTIES
+                INTERFACE_LINK_LIBRARIES PkgConfig::ASIO)
+        endif()
+    endif()
+endif()
+
+if(NOT asio_FOUND AND NOT ASIO_FOUND)
+    message(FATAL_ERROR "asio not found. Please install asio development package or use vcpkg.")
+endif()
 
 # -----------------------------------------------------------------------------
 # Build Configuration

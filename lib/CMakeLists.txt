@@ -47,7 +47,12 @@ target_include_directories(network_transmission PUBLIC
 # Library Dependencies
 # -----------------------------------------------------------------------------
 # Link asio to network_transmission library for network functionality
-target_link_libraries(network_transmission PRIVATE PkgConfig::ASIO)
+if(TARGET asio::asio)
+    target_link_libraries(network_transmission PRIVATE asio::asio)
+else()
+    target_link_libraries(network_transmission PRIVATE ${ASIO_LIBRARIES})
+    target_include_directories(network_transmission PRIVATE ${ASIO_INCLUDE_DIRS})
+endif()
 
 # Link Windows socket library on Windows for asio functionality
 if(WIN32)
