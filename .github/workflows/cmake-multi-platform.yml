@@ -47,21 +47,37 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install vcpkg
+    - name: Install vcpkg (Linux)
+      if: runner.os == 'Linux'
       run: |
         git clone https://github.com/Microsoft/vcpkg.git
         cd vcpkg
-        if [ "$RUNNER_OS" == "Windows" ]; then
-          ./bootstrap-vcpkg.bat
-        else
-          ./bootstrap-vcpkg.sh
-        fi
+        ./bootstrap-vcpkg.sh
+      shell: bash
 
-    - name: Install dependencies with vcpkg (manifest mode)
+    - name: Install vcpkg (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        git clone https://github.com/Microsoft/vcpkg.git
+        cd vcpkg
+        ./bootstrap-vcpkg.bat
+      shell: cmd
+
+    - name: Install dependencies with vcpkg (Linux)
+      if: runner.os == 'Linux'
       run: |
         cd vcpkg
         ./vcpkg install
         cd ..
+      shell: bash
+
+    - name: Install dependencies with vcpkg (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        cd vcpkg
+        ./vcpkg install
+        cd ..
+      shell: cmd
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
