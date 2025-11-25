@@ -2,7 +2,6 @@
 #include <vector>
 #include <chrono>
 
-// Store entry to the vector stored_entries.
 void dht_operation::store_entry(dht_entry entry) {
     // Whether the entry exist. If not, store a new entry.
     if (map_node_ip_to_stored_entries_index.find(entry.node_ip) == map_node_ip_to_stored_entries_index.end()) {
@@ -12,6 +11,10 @@ void dht_operation::store_entry(dht_entry entry) {
         map_node_ip_to_stored_entries_index[entry.node_ip] = static_cast<int>(stored_entries.size() - 1);
         // Update pair.
         ttl_entries.insert({entry.entry_timestamp + entry.node_ttl, entry.node_ip});
+        // Print message.
+        std::cout << "Entry " << entry.node_ip << "stored successfully." << std::endl;
+
+        return;
     }
 
     // If exist, check the timestamp. Store the newer one.
@@ -28,11 +31,14 @@ void dht_operation::store_entry(dht_entry entry) {
             stored_entries[stored_entry_index].node_ttl = entry.node_ttl;
             // Add new TTL entry
             ttl_entries.insert({entry.entry_timestamp + entry.node_ttl, entry.node_ip});
+            // Print a message.
+            std::cout << "Entry " << entry.node_ip << "updated successfully." << std::endl;
+
+            return;
         }
     }
 }
 
-// Query an entry by node_ip.
 dht_entry dht_operation::query_entry(const std::string& node_ip) const {
     auto query_result = map_node_ip_to_stored_entries_index.find(node_ip);
 
@@ -43,7 +49,6 @@ dht_entry dht_operation::query_entry(const std::string& node_ip) const {
     return dht_entry{};
 }
 
-// Query entries by sharding.
 std::vector<dht_entry> dht_operation::query_entry(const sharding& sharding_querying) const {
     std::vector<dht_entry> result;
 
@@ -61,7 +66,6 @@ std::vector<dht_entry> dht_operation::query_entry(const sharding& sharding_query
     return result;
 }
 
-// Remove entry from the vector stored_entries.
 void dht_operation::remove_entry(const std::string& node_ip) {
     // Query the index to remove.
     auto query_result = map_node_ip_to_stored_entries_index.find(node_ip);
@@ -94,7 +98,6 @@ void dht_operation::remove_entry(const std::string& node_ip) {
     }
 }
 
-// Clean expired DHT entry.
 void dht_operation::clean_by_ttl() {
     // Get current timestamp
     auto now_sec = std::chrono::duration_cast<std::chrono::seconds>(

@@ -5,18 +5,29 @@
 #include <memory>
 #include <string>
 
-class Transmission {
-    public:
-        // Class constructor.
-        Transmission(asio::io_context& io_context);
+class Transmission : public std::enable_shared_from_this<Transmission> {
+public:
+    // Factory method for creating shared_ptr instances
+    static std::shared_ptr<Transmission> create(asio::io_context& io_context) {
+        return std::shared_ptr<Transmission>(new Transmission(io_context));
+    }
 
-        // Start a server.
-        void start_server(unsigned short port);
-        // Connect a peer.
-        void connect_to_peer(const std::string& host, unsigned short port);
+public:
+    // Start a server with ip and port.
+    void start_server(const asio::ip::address& address, unsigned short port);
+    // Start accepting.
+    void start_accept();
 
-    private:
-        asio::io_context& io_context_;
+private:
+    // Handle individual client connections.
+    void handle_client_connection(std::shared_ptr<asio::ip::tcp::socket> socket);
+
+    // Private constructor for factory method
+    Transmission(asio::io_context& io_context);
+
+private:
+    asio::io_context& m_io_context;
+    std::unique_ptr<asio::ip::tcp::acceptor> m_acceptor;
 };
 
 #endif

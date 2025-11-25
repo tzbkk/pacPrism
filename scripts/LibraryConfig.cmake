@@ -23,8 +23,8 @@ function(configure_network_dependencies target_name)
         target_include_directories(${target_name} PRIVATE ${ASIO_INCLUDE_DIRS})
     endif()
 
-    # Windows socket library
+    # Windows socket libraries
     if(WIN32)
-        target_link_libraries(${target_name} PRIVATE ws2_32)
+        target_link_libraries(${target_name} PRIVATE ws2_32 mswsock)
     endif()
 endfunction()
