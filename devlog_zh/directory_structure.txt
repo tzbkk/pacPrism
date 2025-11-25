@@ -1,8 +1,0 @@
-devlog_zh/
-├── README_DEVLOG.md          # 开发日志索引文件
-├── devlog_2025-11-24.md     # 2025年11月24日开发日志
-└── devlog_2025-11-23.md     # 2025年11月23日开发日志
-
-# 目录说明
-此目录专门存放 pacPrism 项目的中文开发日志，
-按照日期命名格式：devlog_YYYY-MM-DD.md
