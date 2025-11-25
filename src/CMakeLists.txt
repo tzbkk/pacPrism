@@ -1,16 +1,8 @@
-# =============================================================================
-# pacPrism - Main Application CMake Configuration
-# =============================================================================
+# pacPrism main application CMake configuration
 
-# -----------------------------------------------------------------------------
-# Main Executable
-# -----------------------------------------------------------------------------
-# Define the main pacPrism executable
+# Main executable
 add_executable(pacprism main.cpp)
 
-# -----------------------------------------------------------------------------
-# Link Libraries
-# -----------------------------------------------------------------------------
-# Link required libraries to the main executable
+# Link libraries
 target_link_libraries(pacprism PRIVATE node_dht)
 target_link_libraries(pacprism PRIVATE network_transmission)

@@ -6,14 +6,17 @@
 #include <string>
 
 class Transmission {
-public:
-    Transmission(asio::io_context& io_context);
+    public:
+        // Class constructor.
+        Transmission(asio::io_context& io_context);
 
-    void start_server(unsigned short port);
-    void connect_to_peer(const std::string& host, unsigned short port);
+        // Start a server.
+        void start_server(unsigned short port);
+        // Connect a peer.
+        void connect_to_peer(const std::string& host, unsigned short port);
 
-private:
-    asio::io_context& io_context_;
+    private:
+        asio::io_context& io_context_;
 };
 
 #endif

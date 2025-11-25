@@ -1,60 +1,21 @@
-# =============================================================================
-# pacPrism - Library Components CMake Configuration
-# =============================================================================
+# pacPrism library components CMake configuration
 
-# -----------------------------------------------------------------------------
-# Library Definitions
-# -----------------------------------------------------------------------------
+# Include configuration scripts
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../scripts")
+include(LibraryConfig)
 
-# DHT (Distributed Hash Table) Library
-# Provides core DHT functionality for node discovery and package location
+# Library definitions
 add_library(node_dht SHARED
     node/dht/dht_operation.cpp
 )
 
-# Network Transmission Library
-# Handles network communication between nodes using asio
 add_library(network_transmission SHARED
     network/transmission/transmission.cpp
 )
 
-# -----------------------------------------------------------------------------
-# Platform-Specific Configurations
-# -----------------------------------------------------------------------------
-# Ensure proper import library generation on Windows
-if(WIN32)
-    set_target_properties(node_dht PROPERTIES
-        WINDOWS_EXPORT_ALL_SYMBOLS ON
-    )
-    set_target_properties(network_transmission PROPERTIES
-        WINDOWS_EXPORT_ALL_SYMBOLS ON
-    )
-endif()
+# Configure library targets
+configure_library_target(node_dht)
+configure_library_target(network_transmission)
 
-# -----------------------------------------------------------------------------
-# Include Directories
-# -----------------------------------------------------------------------------
-# Set up include directories for libraries
-target_include_directories(node_dht PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-)
-
-target_include_directories(network_transmission PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-)
-
-# -----------------------------------------------------------------------------
-# Library Dependencies
-# -----------------------------------------------------------------------------
-# Link asio to network_transmission library for network functionality
-if(TARGET asio::asio)
-    target_link_libraries(network_transmission PRIVATE asio::asio)
-else()
-    target_link_libraries(network_transmission PRIVATE ${ASIO_LIBRARIES})
-    target_include_directories(network_transmission PRIVATE ${ASIO_INCLUDE_DIRS})
-endif()
-
-# Link Windows socket library on Windows for asio functionality
-if(WIN32)
-    target_link_libraries(network_transmission PRIVATE ws2_32)
-endif()
+# Configure network-specific dependencies
+configure_network_dependencies(network_transmission)
