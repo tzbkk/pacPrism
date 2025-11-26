@@ -20,7 +20,7 @@ class ServerTrans : public Transmission, public std::enable_shared_from_this<Ser
 public:
     // Factory method for creating shared_ptr instances
     static std::shared_ptr<ServerTrans> create(asio::io_context& io_context) {
-        return std::make_shared<ServerTrans>(io_context);
+        return std::shared_ptr<ServerTrans>(new ServerTrans(io_context));
     }
     // Start a server with ip and port.
     void start_server(const asio::ip::address& address, unsigned short port);
@@ -47,7 +47,7 @@ class ClientTrans : public Transmission, public std::enable_shared_from_this<Cli
 public:
     // Factory method for creating shared_ptr instances
     static std::shared_ptr<ClientTrans> create(asio::io_context& io_context) {
-        return std::make_shared<ClientTrans>(io_context);
+        return std::shared_ptr<ClientTrans>(new ClientTrans(io_context));
     }
     // Start connecting.
     void start_connecting();
