@@ -2,8 +2,14 @@
 #define TRANSMISSION_H
 
 #include <asio.hpp>
+#include <boost/beast.hpp>
 #include <memory>
 #include <string>
+
+namespace beast = boost::beast;
+namespace http = beast::http;
+namespace net = boost::asio;
+using tcp = net::ip::tcp;
 
 // Forward declarations
 class ServerTrans;
@@ -30,7 +36,6 @@ public:
 private:
     // Private constructor for factory method
     explicit ServerTrans(asio::io_context& io_context);
-
       // Read individual client connections.
     void read_from_connection(std::shared_ptr<asio::ip::tcp::socket> socket, std::shared_ptr<asio::streambuf> buffer);
     // Process data read.
@@ -55,7 +60,6 @@ public:
 private:
     // Private constructor for factory method
     explicit ClientTrans(asio::io_context& io_context);
-
     // Member variables
     asio::io_context& m_io_context;
 };

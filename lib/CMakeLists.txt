@@ -19,3 +19,6 @@ configure_library_target(network_transmission)
 
 # Configure network-specific dependencies
 configure_network_dependencies(network_transmission)
+
+# Configure Boost.Beast for network transmission
+configure_beast(network_transmission)

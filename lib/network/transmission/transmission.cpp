@@ -1,6 +1,8 @@
 #include "network/transmission/transmission.h"
 #include <iostream>
+#include <sstream>
 #include <asio.hpp>
+#include <boost/beast.hpp>
 #include <memory>
 #include <array>
 
@@ -10,12 +12,17 @@ ServerTrans::ServerTrans(asio::io_context& io_context)
 
 void ServerTrans::start_server(const asio::ip::address& address, unsigned short port) {
     using asio::ip::tcp;
+
+    auto self = shared_from_this();
+
     // Create an endpoint.
     tcp::endpoint endpoint(address, port);
     // Create an acceptor.
     m_acceptor = std::make_unique<tcp::acceptor>(m_io_context, endpoint);
     // Print message.
     std::cout << "Server started, listening on port " << port << std::endl;
+    // Start accepting.
+    self->start_accept();
 }
 
 void ServerTrans::start_accept() {
@@ -27,7 +34,7 @@ void ServerTrans::start_accept() {
     // Accept a connection.
     m_acceptor->async_accept(*socket, [self, socket](const asio::error_code& error) {
         if (!error) {
-            std::cout << "New client connected: " << socket->remote_endpoint().address().to_string() << std::endl;
+            std::cout << "New client connected: " << socket->remote_endpoint() << std::endl;
             auto buffer = std::make_shared<asio::streambuf>();
             self->read_from_connection(socket, buffer);
             self->start_accept();
@@ -46,14 +53,15 @@ void ServerTrans::read_from_connection(std::shared_ptr<asio::ip::tcp::socket> so
         if (!error) {
             // Commit the read data to the buffer
             buffer->commit(read_size);
+            // Process read data.
+            self->process_from_read_data(socket, buffer);
             // Continue reading from the same connection with the same buffer.
-            self->read_from_connection(socket, buffer);
+            self->read_from_connection(socket, buffer); 
         } else {
             if (error == asio::error::eof) {
-                std::cout << "Read from " << socket->remote_endpoint() << " ended successfully." << std::endl;
-                self->process_from_read_data(socket, buffer);
+                std::cout << "Read from " << socket->remote_endpoint() << " ended, but not respond." << std::endl;
             } else {
-                std::cout << "Read from " << socket->remote_endpoint() << " failed, error code " << error.message() << std::endl;
+                std::cout << "Read from " << socket->remote_endpoint() << " failed, error code: " << error.message() << std::endl;
             }
         }
     };
@@ -63,13 +71,7 @@ void ServerTrans::read_from_connection(std::shared_ptr<asio::ip::tcp::socket> so
 
 void ServerTrans::process_from_read_data(std::shared_ptr<asio::ip::tcp::socket> socket,
                                          std::shared_ptr<asio::streambuf> buffer) {
-    // TODO: Implement HTTP request parsing and processing
-    // This is where we'll parse APT client requests
-    std::cout << "Processing " << buffer->size() << " bytes from client" << std::endl;
-
-    // For now, just echo back a simple response
-    std::string response = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\npacPrism Gateway\n";
-    asio::write(*socket, asio::buffer(response));
+    
 }
 
 // ClientTrans implementation

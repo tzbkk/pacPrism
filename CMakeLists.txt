@@ -15,6 +15,7 @@ include(PlatformConfig)
 
 # External dependencies
 include(AsioConfig)
+include(BeastConfig)
 
 # Build configuration
 include(BuildConfig)
