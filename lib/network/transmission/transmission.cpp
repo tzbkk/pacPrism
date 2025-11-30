@@ -34,7 +34,7 @@ void ServerTrans::start_accept() {
     // Accept a connection.
     m_acceptor->async_accept(*socket, [self, socket, buffer, req_parser](const boost::system::error_code& error) {
         if (!error) {
-            std::cout << "New client connected: " << socket->remote_endpoint() << std::endl;
+            // std::cout << "New client connected: " << socket->remote_endpoint() << std::endl;
             self->read_from_connection(socket, buffer, req_parser);
             self->start_accept();
         } else {
@@ -72,7 +72,7 @@ void ServerTrans::read_from_connection(std::shared_ptr<tcp::socket> socket,
 void ServerTrans::process_from_read_data(std::shared_ptr<tcp::socket> socket,
                                          std::shared_ptr<http::request_parser<http::string_body>> req_parser) {
     auto request = req_parser->release();
-    std::cout << "Received " << request.method_string() << " request for: " << request.target() << std::endl;
+    // std::cout << "Received " << request.method_string() << " request for: " << request.target() << std::endl;
 
     // Send the response
     response_builder(socket, request);
@@ -92,7 +92,7 @@ void ServerTrans::response_builder(std::shared_ptr<tcp::socket> socket, const ht
     http::async_write(*socket, *response,
         [self, socket, response](const boost::system::error_code& error, size_t bytes_transferred) {
             if (!error) {
-                std::cout << "Response sent successfully." << std::endl;
+                // std::cout << "Response sent successfully." << std::endl;
             } else {
                 std::cout << "Failed to send response: " << error.message() << std::endl;
             }
