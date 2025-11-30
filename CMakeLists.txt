@@ -10,11 +10,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Include configuration scripts
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/scripts")
 
+# Version configuration
+include(VersionConfig)
+
 # Platform-specific configurations
 include(PlatformConfig)
 
 # External dependencies
-include(AsioConfig)
 include(BeastConfig)
 
 # Build configuration

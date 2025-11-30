@@ -17,6 +17,10 @@ add_library(network_transmission SHARED
 configure_library_target(node_dht)
 configure_library_target(network_transmission)
 
+# Apply version information to library targets
+get_version_info(node_dht)
+get_version_info(network_transmission)
+
 # Configure network-specific dependencies
 configure_network_dependencies(network_transmission)
 

@@ -16,13 +16,7 @@ endfunction()
 
 # Configure network dependencies
 function(configure_network_dependencies target_name)
-    if(TARGET asio::asio)
-        target_link_libraries(${target_name} PRIVATE asio::asio)
-    else()
-        target_link_libraries(${target_name} PRIVATE ${ASIO_LIBRARIES})
-        target_include_directories(${target_name} PRIVATE ${ASIO_INCLUDE_DIRS})
-    endif()
-
+    # Note: asio is now provided by boost::beast, no standalone asio needed
     # Windows socket libraries
     if(WIN32)
         target_link_libraries(${target_name} PRIVATE ws2_32 mswsock)

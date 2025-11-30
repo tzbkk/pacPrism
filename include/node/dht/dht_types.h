@@ -19,4 +19,4 @@ struct dht_entry {
     int64_t node_ttl;
 };
 
-#endif
+#endif // DHT_TYPES_H

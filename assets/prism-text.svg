@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="106.93295mm"
+   height="22.659071mm"
+   viewBox="0 0 106.93295 22.659071"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   sodipodi:docname="prism-text.svg"
+   inkscape:export-filename="prism-banner.png"
+   inkscape:export-xdpi="400"
+   inkscape:export-ydpi="400"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="2.8284271"
+     inkscape:cx="403.05087"
+     inkscape:cy="64.877047"
+     inkscape:window-width="2560"
+     inkscape:window-height="1406"
+     inkscape:window-x="-11"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <rect
+       x="308"
+       y="-118"
+       width="892"
+       height="698"
+       id="rect4" />
+    <rect
+       x="422.25"
+       y="238.25"
+       width="569.74432"
+       height="30.795942"
+       id="rect2" />
+    <rect
+       x="376"
+       y="151"
+       width="394"
+       height="113.54493"
+       id="rect1" />
+    <rect
+       x="308"
+       y="-118"
+       width="892"
+       height="698"
+       id="rect13" />
+    <rect
+       x="376"
+       y="151"
+       width="394"
+       height="113.54493"
+       id="rect14" />
+    <rect
+       x="422.25"
+       y="238.25"
+       width="569.74432"
+       height="30.795942"
+       id="rect15" />
+  </defs>
+  <g
+     inkscape:label="图层 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-94.627745,-89.666851)">
+    <g
+       inkscape:label="图层 1 复制"
+       inkscape:groupmode="layer"
+       id="g13" />
+    <text
+       xml:space="preserve"
+       transform="matrix(0.40791658,0,0,0.40791658,-59.220178,21.697294)"
+       id="text1"
+       style="font-style:italic;font-variant:normal;font-weight:600;font-stretch:normal;font-size:62.2676px;font-family:'Linux Libertine G';-inkscape-font-specification:'Linux Libertine G, Semi-Bold Italic';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect1);display:inline;fill:#3739aa;fill-opacity:0.776471;stroke-width:37.7953"><tspan
+         x="376"
+         y="207.61085"
+         id="tspan2"><tspan
+           style="font-style:normal;font-weight:bold;-inkscape-font-specification:'Linux Libertine G, Bold'"
+           id="tspan1">pacPrism</tspan></tspan></text>
+  </g>
+  <metadata
+     id="metadata57">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by/4.0/" />
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by/4.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+</svg>

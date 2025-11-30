@@ -71,16 +71,29 @@ pacPrism employs a **"centralized access layer + decentralized data layer"** hyb
 
 ## Technology Stack
 
-- **Core System** (gateways, node logic, DHT/Gossip protocols): **C++**
-  → Pursuing high performance, low latency, fine-grained memory control
-- **Toolchain & Auxiliary Services** (monitoring, configuration management, test scripts): **Go**
-  → Rapid development, concurrency-friendly, simple deployment
+- **Core System** (gateways, node logic, DHT/Gossip protocols): **C++23**
+  → High performance, low latency, fine-grained memory control
+- **Build System**: **CMake 3.14+**
+  → Modern CMake practices with modular configuration
+- **Networking**: **Boost.Beast** (includes built-in Boost.Asio)
+  → HTTP/1.1 server implementation with async I/O
+- **Package Management**: **vcpkg**
+  → Cross-platform dependency management
+
+## Documentation
+
+- [Build Guide](docs/BUILD_GUIDE.md) - Detailed build instructions and optimization
+- [Version System](docs/VERSION_SYSTEM.md) - Modular version management system
+- [Current Status](docs/CURRENT_STATUS.md) - Development status and roadmap
+- [Chinese Devlog](devlog_zh/README_DEVLOG.md) - Development progress log (Chinese)
 
 ## Installation
 
 ### Prerequisites
-- CMake 3.14 or higher
-- C++23 compatible compiler
+- **CMake 3.14+**
+- **C++23 compatible compiler** (GCC 13+, Clang 14+, MSVC 19.36+)
+- **vcpkg** (for dependency management)
+- **Git** (for version information)
 
 ### Build Instructions
 
@@ -119,10 +132,32 @@ cmake --build build --target clean
 ```
 pacPrism/
 ├── CMakeLists.txt          # Root CMake configuration
-├── src/                    # Main application source
-├── lib/                    # Library components
-├── include/                # Header files
-└── docs/                   # Documentation and GitHub Pages
+├── vcpkg.json              # vcpkg dependency management
+├── scripts/                 # CMake configuration modules
+│   ├── VersionConfig.cmake    # Version management system
+│   ├── BeastConfig.cmake     # Boost.Beast configuration
+│   ├── LibraryConfig.cmake   # Library target configuration
+│   └── BuildConfig.cmake     # Build system configuration
+├── cmake/                   # CMake templates
+│   └── version.h.in          # Version header template
+├── src/                     # Main application source
+│   ├── main.cpp               # Application entry point
+│   └── CMakeLists.txt         # Executable configuration
+├── lib/                     # Library components
+│   ├── node/dht/              # DHT implementation
+│   │   ├── dht_operation.cpp  # DHT operations
+│   │   └── CMakeLists.txt     # DHT library config
+│   └── network/              # Network layer
+│       ├── transmission/        # HTTP transmission
+│       │   ├── transmission.cpp # HTTP server implementation
+│       │   └── CMakeLists.txt # Network library config
+│       └── CMakeLists.txt     # Network module config
+├── include/                  # Header files
+│   ├── network/transmission/   # Network headers
+│   └── node/                 # DHT and data structures
+└── docs/                     # Documentation
+    ├── VERSION_SYSTEM.md        # Version system documentation
+    └── README_DEVLOG.md       # Development log index
 ```
 
 ## Future Roadmap

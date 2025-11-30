@@ -85,8 +85,6 @@ function(configure_beast target_name)
         target_link_libraries(${target_name} PRIVATE Boost::regex)
     endif()
 
-    # Asio integration - Beast works well with asio
-    if(TARGET asio::asio)
-        target_link_libraries(${target_name} PRIVATE asio::asio)
-    endif()
+    # Note: Using asio from boost-beast, no standalone asio needed
+    # boost::beast includes asio in boost namespace
 endfunction()
