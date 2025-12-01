@@ -1,37 +1,73 @@
-# BeastConfig.cmake - Auto-generate and use vcpkg for dependency management
+# BeastConfig.cmake - Find and configure Boost.Beast with vcpkg manifest fallback
+
+# Set policy to avoid deprecation warning about FindBoost module
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
+endif()
 
 set(BEAST_FOUND FALSE)
+message(STATUS "Looking for Boost.Beast...")
 
-# If vcpkg toolchain is already provided, use it
-if(DEFINED CMAKE_TOOLCHAIN_FILE)
-    message(STATUS "Using provided vcpkg toolchain: ${CMAKE_TOOLCHAIN_FILE}")
+# Step 1: Try to find system Boost installation first
+find_package(Boost QUIET COMPONENTS system regex thread chrono date_time)
 
-    # Find Boost.Beast through existing vcpkg
-    find_package(boost-beast CONFIG QUIET)
+if(Boost_FOUND)
+    message(STATUS "Found Boost system installation")
+    message(STATUS "Boost include dirs: ${Boost_INCLUDE_DIRS}")
 
-    if(TARGET Boost::beast)
-        set(BEAST_FOUND TRUE)
-        message(STATUS "Found Boost.Beast from existing vcpkg: Boost::beast")
-    elseif(TARGET boost-beast)
-        set(BEAST_FOUND TRUE)
-        message(STATUS "Found Boost.Beast from existing vcpkg: boost-beast")
-    endif()
+    # Check if Boost.Beast headers are available
+    find_path(BOOST_BEAST_INCLUDE_DIR
+        NAMES boost/beast.hpp
+        PATHS ${Boost_INCLUDE_DIRS}
+        NO_DEFAULT_PATH
+    )
 
-    # Also find core Boost components that Beast depends on
-    if(BEAST_FOUND)
-        find_package(Boost QUIET COMPONENTS system regex thread chrono date_time)
-        if(NOT Boost_FOUND)
-            message(FATAL_ERROR "Boost components not found. Install: vcpkg install boost-system boost-regex boost-thread boost-chrono boost-date-time")
+    if(BOOST_BEAST_INCLUDE_DIR AND EXISTS "${BOOST_BEAST_INCLUDE_DIR}/boost/beast.hpp")
+        message(STATUS "Found Boost.Beast headers: ${BOOST_BEAST_INCLUDE_DIR}")
+
+        # Create Boost::beast target since it's header-only
+        if(NOT TARGET Boost::beast)
+            add_library(Boost::beast INTERFACE IMPORTED)
+            set_target_properties(Boost::beast PROPERTIES
+                INTERFACE_INCLUDE_DIRECTORIES "${BOOST_BEAST_INCLUDE_DIR}"
+                INTERFACE_LINK_LIBRARIES "Boost::system;Boost::regex;Boost::thread;Boost::chrono;Boost::date_time"
+            )
         endif()
+
+        set(BEAST_FOUND TRUE)
+        message(STATUS "Configured Boost.Beast from system installation")
     endif()
 endif()
 
-# If no existing vcpkg found, auto-generate vcpkg
+# Step 2: If system Boost not found, try vcpkg toolchain if provided
+if(NOT BEAST_FOUND AND DEFINED CMAKE_TOOLCHAIN_FILE)
+    message(STATUS "System Boost not found, trying vcpkg toolchain...")
+
+    # Try CONFIG mode with vcpkg
+    find_package(boost-beast CONFIG QUIET)
+
+    if(TARGET boost-beast)
+        set(BEAST_FOUND TRUE)
+        message(STATUS "Found Boost.Beast from vcpkg: boost-beast")
+
+        # Create Boost::beast alias for consistency
+        if(NOT TARGET Boost::beast)
+            add_library(Boost::beast INTERFACE IMPORTED)
+            target_link_libraries(Boost::beast INTERFACE boost_beast)
+        endif()
+    elseif(TARGET Boost::beast)
+        set(BEAST_FOUND TRUE)
+        message(STATUS "Found Boost.Beast from vcpkg: Boost::beast")
+    endif()
+endif()
+
+# Step 3: If still not found, use vcpkg manifest mode
 if(NOT BEAST_FOUND)
-    if(DEFINED CMAKE_TOOLCHAIN_FILE)
-        message(STATUS "Existing vcpkg Boost.Beast not found, checking if we need to install packages...")
-    else()
-        message(STATUS "No vcpkg toolchain specified, auto-generating vcpkg...")
+    message(STATUS "No existing Boost.Beast found, using vcpkg manifest mode...")
+
+    # Verify vcpkg.json exists
+    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/vcpkg.json")
+        message(FATAL_ERROR "vcpkg.json not found in project root")
     endif()
 
     # Auto-generate vcpkg in build directory
@@ -85,10 +121,10 @@ if(NOT BEAST_FOUND)
         message(STATUS "Using existing vcpkg at ${VCPKG_ROOT}")
     endif()
 
-    # Install required vcpkg packages using manifest mode
-    message(STATUS "Installing required vcpkg packages using manifest mode...")
+    # Set up vcpkg toolchain for subsequent find_package calls
+    set(CMAKE_TOOLCHAIN_FILE "${VCPKG_TOOLCHAIN}" CACHE FILEPATH "vcpkg toolchain for manifest mode" FORCE)
 
-    set(vcpkg_triplet "")
+    # Determine vcpkg triplet
     if(WIN32)
         if(CMAKE_SIZEOF_VOID_P EQUAL 8)
             set(vcpkg_triplet "x64-windows")
@@ -103,141 +139,102 @@ if(NOT BEAST_FOUND)
         endif()
     endif()
 
-    message(STATUS "Detected vcpkg triplet: ${vcpkg_triplet}")
-
+    # Install vcpkg dependencies from manifest (vcpkg.json)
+    message(STATUS "Installing dependencies from vcpkg.json (manifest mode)...")
+    message(STATUS "Running: ${VCPKG_ROOT}/vcpkg install --triplet ${vcpkg_triplet}")
     execute_process(
         COMMAND "${VCPKG_ROOT}/vcpkg" install --triplet ${vcpkg_triplet}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         RESULT_VARIABLE vcpkg_install_result
         OUTPUT_VARIABLE vcpkg_install_output
         ERROR_VARIABLE vcpkg_install_error
+        ECHO_OUTPUT_VARIABLE
+        ECHO_ERROR_VARIABLE
     )
 
     if(NOT vcpkg_install_result EQUAL 0)
+        message(STATUS "vcpkg install result: ${vcpkg_install_result}")
         message(STATUS "vcpkg install output: ${vcpkg_install_output}")
         message(STATUS "vcpkg install error: ${vcpkg_install_error}")
-        message(FATAL_ERROR "Failed to install vcpkg packages from vcpkg.json")
+        message(FATAL_ERROR "Failed to install vcpkg dependencies from vcpkg.json")
     endif()
 
-    message(STATUS "vcpkg packages successfully installed from vcpkg.json")
+    message(STATUS "vcpkg dependencies successfully installed from manifest")
 
-    # Set toolchain for subsequent configuration
-    set(CMAKE_TOOLCHAIN_FILE "${VCPKG_TOOLCHAIN}" CACHE FILEPATH "Auto-generated vcpkg toolchain" FORCE)
+    # 设置 vcpkg 安装路径
+    set(VCPKG_INSTALLED_DIR "${VCPKG_ROOT}/installed/${vcpkg_triplet}")
+    list(APPEND CMAKE_PREFIX_PATH "${VCPKG_INSTALLED_DIR}")
+    message(STATUS "Added to CMAKE_PREFIX_PATH: ${VCPKG_INSTALLED_DIR}")
 
-    # Debug: List available packages in the generated vcpkg
-    execute_process(
-        COMMAND "${VCPKG_ROOT}/vcpkg" list
-        WORKING_DIRECTORY ${VCPKG_ROOT}
-        RESULT_VARIABLE vcpkg_list_result
-        OUTPUT_VARIABLE vcpkg_list_output
-        ERROR_VARIABLE vcpkg_list_error
-    )
+# Find boost-beast from the vcpkg installation
+find_package(boost_beast CONFIG QUIET)
 
-    message(STATUS "vcpkg installed packages: ${vcpkg_list_output}")
 
-    # Re-run find_package with the generated vcpkg
-    find_package(boost-beast CONFIG QUIET)
-
-    # Debug: Try to find Boost components individually
-    find_package(Boost CONFIG QUIET COMPONENTS system regex thread chrono date_time)
-
-    message(STATUS "Boost_FOUND: ${Boost_FOUND}")
-    if(Boost_FOUND)
-        message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")
-        message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
-    endif()
-
-    if(TARGET Boost::beast)
+    if(TARGET boost_beast)
         set(BEAST_FOUND TRUE)
-        message(STATUS "Found Boost.Beast from auto-generated vcpkg: Boost::beast")
-    elseif(TARGET boost-beast)
-        set(BEAST_FOUND TRUE)
-        message(STATUS "Found Boost.Beast from auto-generated vcpkg: boost-beast")
-    else()
-        # boost-beast from vcpkg is header-only and doesn't provide CMake targets
-        # We need to create the target manually from installed headers
-        message(STATUS "Boost.Beast CONFIG not found, creating target from vcpkg headers...")
+        message(STATUS "Found boost_beast target from vcpkg manifest")
 
-        # Find the boost-beast include directory in vcpkg
-        # Check if boost-beast is installed in the standard vcpkg location
-        set(VCPKG_INSTALLED_DIR "${VCPKG_ROOT}/installed/${vcpkg_triplet}")
-        if(EXISTS "${VCPKG_INSTALLED_DIR}")
-            set(VCPKG_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/include")
-        else()
-            # Fallback to common triplet names
-            set(VCPKG_INCLUDE_DIR "${VCPKG_ROOT}/installed/x64-linux/include")
+        # Create Boost::beast alias for consistency
+        if(NOT TARGET Boost::beast)
+            add_library(Boost::beast INTERFACE IMPORTED)
+            target_link_libraries(Boost::beast INTERFACE boost_beast)
         endif()
+    elseif(TARGET Boost::beast)
+        set(BEAST_FOUND TRUE)
+        message(STATUS "Found Boost::beast target from vcpkg manifest")
+    else()
+        # Try the alternative naming convention
+        find_package(boost_beast CONFIG QUIET)
 
-        message(STATUS "Looking for boost/beast.hpp in ${VCPKG_INCLUDE_DIR}")
-
-        find_path(BOOST_BEAST_INCLUDE_DIR
-            NAMES boost/beast.hpp
-            PATHS "${VCPKG_INCLUDE_DIR}"
-            NO_DEFAULT_PATH
-        )
-
-        message(STATUS "BOOST_BEAST_INCLUDE_DIR: ${BOOST_BEAST_INCLUDE_DIR}")
-
-        if(BOOST_BEAST_INCLUDE_DIR)
+        if(TARGET boost_beast)
             set(BEAST_FOUND TRUE)
-            message(STATUS "Found Boost.Beast headers in vcpkg: ${BOOST_BEAST_INCLUDE_DIR}")
+            message(STATUS "Found boost_beast target from vcpkg manifest")
 
-            # Create Boost::beast target manually
+            # Create Boost::beast alias for consistency
             if(NOT TARGET Boost::beast)
                 add_library(Boost::beast INTERFACE IMPORTED)
-                set_target_properties(Boost::beast PROPERTIES
-                    INTERFACE_INCLUDE_DIRECTORIES "${BOOST_BEAST_INCLUDE_DIR}"
-                )
-
-                # Add dependencies on Boost libraries that Beast uses
-                target_link_libraries(Boost::beast INTERFACE
-                    $<TARGET_EXISTS:Boost::system>:Boost::system
-                    $<TARGET_EXISTS:Boost::regex>:Boost::regex
-                    $<TARGET_EXISTS:Boost::date_time>:Boost::date_time
-                )
+                target_link_libraries(Boost::beast INTERFACE boost_beast)
             endif()
         else()
-            # Fallback: try to find Beast as part of Boost installation
-            if(Boost_FOUND)
-                find_path(BOOST_BEAST_INCLUDE_DIR
-                    NAMES boost/beast.hpp
-                    PATHS ${Boost_INCLUDE_DIRS}
-                    NO_DEFAULT_PATH
-                )
+            # Fallback: find headers manually and create target
+            set(VCPKG_INSTALLED_DIR "${VCPKG_ROOT}/installed/${vcpkg_triplet}")
+            find_path(BOOST_BEAST_INCLUDE_DIR
+                NAMES boost/beast.hpp
+                PATHS "${VCPKG_INSTALLED_DIR}/include"
+                NO_DEFAULT_PATH
+            )
 
-                if(BOOST_BEAST_INCLUDE_DIR)
-                    set(BEAST_FOUND TRUE)
-                    message(STATUS "Found Boost.Beast as part of Boost installation: ${BOOST_BEAST_INCLUDE_DIR}")
-                    # Create Beast target
-                    if(NOT TARGET Boost::beast)
-                        add_library(Boost::beast INTERFACE IMPORTED)
-                        set_target_properties(Boost::beast PROPERTIES
-                            INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
-                            INTERFACE_LINK_LIBRARIES "${Boost_LIBRARIES}"
-                        )
-                    endif()
+            if(BOOST_BEAST_INCLUDE_DIR)
+                message(STATUS "Found Boost.Beast headers from vcpkg: ${BOOST_BEAST_INCLUDE_DIR}")
+
+                # Create Boost::beast target
+                if(NOT TARGET Boost::beast)
+                    add_library(Boost::beast INTERFACE IMPORTED)
+                    set_target_properties(Boost::beast PROPERTIES
+                        INTERFACE_INCLUDE_DIRECTORIES "${BOOST_BEAST_INCLUDE_DIR}"
+                    )
                 endif()
+
+                set(BEAST_FOUND TRUE)
+                message(STATUS "Configured Boost.Beast from vcpkg manifest headers")
+            else()
+                message(FATAL_ERROR "Boost.Beast not found after vcpkg manifest installation")
             endif()
         endif()
-    endif()
-
-    if(NOT BEAST_FOUND)
-        message(FATAL_ERROR "Failed to find Boost.Beast after auto-generating vcpkg. Available packages: ${vcpkg_list_output}")
     endif()
 endif()
 
-# Function to configure Beast with vcpkg (either existing or auto-generated)
+# Final validation
+if(NOT BEAST_FOUND)
+    message(FATAL_ERROR "Boost.Beast could not be found or installed")
+endif()
+
+# Function to configure Beast for targets
 function(configure_beast target_name)
     if(TARGET Boost::beast)
         target_link_libraries(${target_name} PRIVATE Boost::beast)
-        message(STATUS "Configured ${target_name} with Boost::beast from vcpkg")
-    elseif(TARGET boost-beast)
-        target_link_libraries(${target_name} PRIVATE boost-beast)
-        message(STATUS "Configured ${target_name} with boost-beast from vcpkg")
+        message(STATUS "Configured ${target_name} with Boost.Beast")
     else()
-        message(FATAL_ERROR "Boost.Beast target not found. vcpkg configuration failed.")
+        message(FATAL_ERROR "Boost.Beast target not available")
     endif()
-
-    # vcpkg automatically handles Boost component dependencies
-    # through the INTERFACE_LINK_LIBRARIES of the Boost::beast target
 endfunction()
