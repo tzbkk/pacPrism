@@ -52,7 +52,7 @@ if(NOT BEAST_FOUND)
     # Configure Boost for FetchContent
     set(BOOST_ENABLE_CMAKE ON CACHE BOOL "Enable CMake support for Boost")
     set(BUILD_TESTING OFF CACHE BOOL "Disable Boost testing")
-    set(BOOST_INCLUDE_LIBRARIES "system;regex;thread;chrono;date-time" CACHE STRING "Boost libraries to include")
+    set(BOOST_INCLUDE_LIBRARIES "system;regex;thread;chrono;date_time" CACHE STRING "Boost libraries to include")
 
     FetchContent_MakeAvailable(boost)
 
@@ -61,7 +61,7 @@ if(NOT BEAST_FOUND)
         add_library(Boost::beast INTERFACE IMPORTED)
         set_target_properties(Boost::beast PROPERTIES
             INTERFACE_INCLUDE_DIRECTORIES "${boost_SOURCE_DIR}"
-            INTERFACE_LINK_LIBRARIES "Boost::system;Boost::regex;Boost::thread;Boost::chrono;Boost::date-time"
+            INTERFACE_LINK_LIBRARIES "Boost::system;Boost::regex;Boost::thread;Boost::chrono;Boost::date_time"
         )
     endif()
 
