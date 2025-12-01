@@ -1,7 +1,7 @@
 # pacPrism library components CMake configuration
 
 # Include configuration scripts
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../scripts")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake")
 include(LibraryConfig)
 
 # Library definitions
