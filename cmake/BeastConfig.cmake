@@ -1,73 +1,50 @@
-# BeastConfig.cmake - Complete Boost dependency management for pacPrism
+# BeastConfig.cmake - vcpkg dependency management for pacPrism
 
-# Try to find complete Boost installation first
-find_package(Boost 1.70 QUIET COMPONENTS system regex thread chrono date_time)
+# vcpkg integration - vcpkg must be pre-installed on build machines
+if(DEFINED CMAKE_TOOLCHAIN_FILE)
+    message(STATUS "Using vcpkg toolchain: ${CMAKE_TOOLCHAIN_FILE}")
+else()
+    message(FATAL_ERROR "vcpkg toolchain not specified. Please install vcpkg and set CMAKE_TOOLCHAIN_FILE to vcpkg.cmake")
+endif()
+
+# Required packages for vcpkg
+set(VCPKG_TARGET_TRIPLET ${VCPKG_TARGET_TRIPLET} CACHE STRING "Vcpkg target triplet")
+set(VCPKG_MANIFEST_MODE OFF CACHE BOOL "Disable vcpkg manifest mode, use explicit find_package")
+
+# Find Boost.Beast through vcpkg
+find_package(boost-beast CONFIG REQUIRED)
 
 set(BEAST_FOUND FALSE)
 
-if(Boost_FOUND)
-    # Check if beast is available in the Boost installation
-    find_path(BOOST_BEAST_INCLUDE_DIR
-        NAMES boost/beast.hpp
-        PATHS ${Boost_INCLUDE_DIRS}
-        NO_DEFAULT_PATH
-    )
-
-    if(BOOST_BEAST_INCLUDE_DIR)
-        set(BEAST_FOUND TRUE)
-        message(STATUS "Found complete Boost with Beast: ${Boost_INCLUDE_DIRS}")
-
-        # Create Beast target if it doesn't exist
-        if(NOT TARGET Boost::beast)
-            add_library(Boost::beast INTERFACE IMPORTED)
-            set_target_properties(Boost::beast PROPERTIES
-                INTERFACE_INCLUDE_DIRECTORIES "${BOOST_BEAST_INCLUDE_DIR}"
-                INTERFACE_LINK_LIBRARIES "Boost::system;Boost::regex;Boost::thread;Boost::chrono;Boost::date_time"
-            )
-        endif()
-    endif()
-endif()
-
-# If complete Boost not found, fetch via FetchContent
-if(NOT BEAST_FOUND)
-    message(STATUS "Complete Boost not found, fetching via FetchContent...")
-    include(FetchContent)
-
-    # Fetch complete Boost distribution
-    FetchContent_Declare(
-        boost
-        GIT_REPOSITORY https://github.com/boostorg/boost.git
-        GIT_TAG        boost-1.85.0
-    )
-
-    # Initialize Boost submodules for the components we need
-    set(BOOST_ENABLE_CMAKE ON CACHE BOOL "Enable CMake support for Boost")
-    set(BUILD_TESTING OFF CACHE BOOL "Disable Boost testing")
-    set(BOOST_INCLUDE_LIBRARIES "system;regex;thread;chrono;date_time" CACHE STRING "Boost libraries to include")
-
-    FetchContent_MakeAvailable(boost)
-
-    # Create Beast target using the fetched Boost
-    add_library(Boost::beast INTERFACE IMPORTED)
-    set_target_properties(Boost::beast PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES "${boost_SOURCE_DIR}"
-        INTERFACE_LINK_LIBRARIES "Boost::system;Boost::regex;Boost::thread;Boost::chrono;Boost::date_time"
-    )
-
+if(TARGET Boost::beast)
     set(BEAST_FOUND TRUE)
-    message(STATUS "Complete Boost successfully fetched and configured")
+    message(STATUS "Found Boost.Beast from vcpkg: Boost::beast")
+elseif(TARGET boost-beast)
+    set(BEAST_FOUND TRUE)
+    message(STATUS "Found Boost.Beast from vcpkg: boost-beast")
+else()
+    message(FATAL_ERROR "Boost.Beast not found. Please install with vcpkg: vcpkg install boost-beast")
 endif()
 
-# Function to configure Beast with complete Boost for a target
+# Also find core Boost components that Beast depends on
+find_package(Boost REQUIRED COMPONENTS system regex thread chrono date_time)
+
+if(NOT Boost_FOUND)
+    message(FATAL_ERROR "Core Boost components not found. Please install with vcpkg: vcpkg install boost-system boost-regex boost-thread boost-chrono boost-date-time")
+endif()
+
+# Function to configure Beast with vcpkg for a target
 function(configure_beast target_name)
     if(TARGET Boost::beast)
         target_link_libraries(${target_name} PRIVATE Boost::beast)
-        message(STATUS "Configured ${target_name} with Boost::beast (complete Boost)")
+        message(STATUS "Configured ${target_name} with Boost::beast from vcpkg")
+    elseif(TARGET boost-beast)
+        target_link_libraries(${target_name} PRIVATE boost-beast)
+        message(STATUS "Configured ${target_name} with boost-beast from vcpkg")
     else()
-        message(WARNING "Boost.Beast target not found, HTTP functionality may not work properly")
-        return()
+        message(FATAL_ERROR "Boost.Beast target not found. vcpkg installation may be incomplete.")
     endif()
 
-    # All required Boost components are already linked via Boost::beast INTERFACE_LINK_LIBRARIES
-    # No need to manually link individual components
+    # vcpkg automatically handles Boost component dependencies
+    # No need to manually link individual Boost components
 endfunction()
