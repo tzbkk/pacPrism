@@ -41,28 +41,60 @@ if(NOT BEAST_FOUND)
     message(STATUS "Boost.Beast not found, fetching via FetchContent...")
     include(FetchContent)
 
-    # First fetch Boost.Asio since Beast depends on it
-    if(NOT TARGET Boost::asio AND NOT TARGET asio)
+    # Find or fetch basic Boost libraries first
+    find_package(Boost 1.70 QUIET COMPONENTS system regex)
+    if(NOT Boost_FOUND)
+        message(STATUS "Boost not found, fetching core components via FetchContent...")
+
+        # Fetch essential boost components that beast depends on
         FetchContent_Declare(
-            asio
-            GIT_REPOSITORY https://github.com/boostorg/asio.git
+            boost_assert
+            GIT_REPOSITORY https://github.com/boostorg/assert.git
             GIT_TAG        boost-1.85.0
         )
-        FetchContent_MakeAvailable(asio)
+        FetchContent_Declare(
+            boost_align
+            GIT_REPOSITORY https://github.com/boostorg/align.git
+            GIT_TAG        boost-1.85.0
+        )
+        FetchContent_Declare(
+            boost_system
+            GIT_REPOSITORY https://github.com/boostorg/system.git
+            GIT_TAG        boost-1.85.0
+        )
+        FetchContent_Declare(
+            boost_regex
+            GIT_REPOSITORY https://github.com/boostorg/regex.git
+            GIT_TAG        boost-1.85.0
+        )
 
-        if(TARGET asio AND NOT TARGET Boost::asio)
-            add_library(Boost::asio ALIAS asio)
-        endif()
+        FetchContent_MakeAvailable(boost_assert)
+        FetchContent_MakeAvailable(boost_align)
+        FetchContent_MakeAvailable(boost_system)
+        FetchContent_MakeAvailable(boost_regex)
     endif()
 
+    # Use standalone Asio (not Boost.Asio) to avoid complex Boost dependencies
+    if(NOT TARGET asio)
+        FetchContent_Declare(
+            asio
+            GIT_REPOSITORY https://github.com/chrismackenzie/asio.git
+            GIT_TAG        asio-1-28-2
+        )
+        FetchContent_MakeAvailable(asio)
+    endif()
+
+    # Fetch Boost.Beast
     FetchContent_Declare(
         boost-beast
         GIT_REPOSITORY https://github.com/boostorg/beast.git
         GIT_TAG        boost-1.85.0
     )
 
-    # Set beast as header-only
+    # Set beast as header-only to avoid complex link dependencies
     set(BOOST_BEAST_HEADER_ONLY TRUE CACHE BOOL "Build Boost.Beast as header-only")
+    # Disable optional dependencies that cause issues
+    set(BOOST_BEAST_DISABLE_BOOST_URL TRUE CACHE BOOL "Disable Boost.URL dependency")
 
     FetchContent_MakeAvailable(boost-beast)
 
@@ -90,19 +122,32 @@ function(configure_beast target_name)
         return()
     endif()
 
-    # Beast also needs boost system and other core components
+    # Link with standalone Asio (preferred over Boost.Asio to avoid dependency issues)
+    if(TARGET asio)
+        target_link_libraries(${target_name} PRIVATE asio)
+    elseif(TARGET Boost::asio)
+        target_link_libraries(${target_name} PRIVATE Boost::asio)
+    endif()
+
+    # Link with Boost core components if available
     if(TARGET Boost::system)
         target_link_libraries(${target_name} PRIVATE Boost::system)
+    elseif(TARGET boost_system)
+        target_link_libraries(${target_name} PRIVATE boost_system)
     endif()
 
     if(TARGET Boost::regex)
         target_link_libraries(${target_name} PRIVATE Boost::regex)
+    elseif(TARGET boost_regex)
+        target_link_libraries(${target_name} PRIVATE boost_regex)
     endif()
 
-    # Link with Boost::asio if available
-    if(TARGET Boost::asio)
-        target_link_libraries(${target_name} PRIVATE Boost::asio)
-    elseif(TARGET asio)
-        target_link_libraries(${target_name} PRIVATE asio)
+    # Link other essential Boost components for Beast compatibility
+    if(TARGET boost_assert)
+        target_link_libraries(${target_name} PRIVATE boost_assert)
+    endif()
+
+    if(TARGET boost_align)
+        target_link_libraries(${target_name} PRIVATE boost_align)
     endif()
 endfunction()
