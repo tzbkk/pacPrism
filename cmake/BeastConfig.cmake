@@ -85,8 +85,8 @@ if(NOT BEAST_FOUND)
         message(STATUS "Using existing vcpkg at ${VCPKG_ROOT}")
     endif()
 
-    # Install required vcpkg packages
-    message(STATUS "Installing required vcpkg packages...")
+    # Install required vcpkg packages using manifest mode
+    message(STATUS "Installing required vcpkg packages using manifest mode...")
 
     set(vcpkg_triplet "")
     if(WIN32)
@@ -104,8 +104,8 @@ if(NOT BEAST_FOUND)
     endif()
 
     execute_process(
-        COMMAND "${VCPKG_ROOT}/vcpkg" install boost-beast boost-system boost-regex boost-thread boost-chrono boost-date-time --triplet ${vcpkg_triplet}
-        WORKING_DIRECTORY ${VCPKG_ROOT}
+        COMMAND "${VCPKG_ROOT}/vcpkg" install --triplet ${vcpkg_triplet}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         RESULT_VARIABLE vcpkg_install_result
         OUTPUT_VARIABLE vcpkg_install_output
         ERROR_VARIABLE vcpkg_install_error
@@ -114,10 +114,10 @@ if(NOT BEAST_FOUND)
     if(NOT vcpkg_install_result EQUAL 0)
         message(STATUS "vcpkg install output: ${vcpkg_install_output}")
         message(STATUS "vcpkg install error: ${vcpkg_install_error}")
-        message(FATAL_ERROR "Failed to install vcpkg packages")
+        message(FATAL_ERROR "Failed to install vcpkg packages from vcpkg.json")
     endif()
 
-    message(STATUS "vcpkg packages successfully installed")
+    message(STATUS "vcpkg packages successfully installed from vcpkg.json")
 
     # Set toolchain for subsequent configuration
     set(CMAKE_TOOLCHAIN_FILE "${VCPKG_TOOLCHAIN}" CACHE FILEPATH "Auto-generated vcpkg toolchain" FORCE)
