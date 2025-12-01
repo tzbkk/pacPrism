@@ -122,8 +122,28 @@ if(NOT BEAST_FOUND)
     # Set toolchain for subsequent configuration
     set(CMAKE_TOOLCHAIN_FILE "${VCPKG_TOOLCHAIN}" CACHE FILEPATH "Auto-generated vcpkg toolchain" FORCE)
 
+    # Debug: List available packages in the generated vcpkg
+    execute_process(
+        COMMAND "${VCPKG_ROOT}/vcpkg" list
+        WORKING_DIRECTORY ${VCPKG_ROOT}
+        RESULT_VARIABLE vcpkg_list_result
+        OUTPUT_VARIABLE vcpkg_list_output
+        ERROR_VARIABLE vcpkg_list_error
+    )
+
+    message(STATUS "vcpkg installed packages: ${vcpkg_list_output}")
+
     # Re-run find_package with the generated vcpkg
     find_package(boost-beast CONFIG QUIET)
+
+    # Debug: Try to find Boost components individually
+    find_package(Boost CONFIG QUIET COMPONENTS system regex thread chrono date_time)
+
+    message(STATUS "Boost_FOUND: ${Boost_FOUND}")
+    if(Boost_FOUND)
+        message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")
+        message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
+    endif()
 
     if(TARGET Boost::beast)
         set(BEAST_FOUND TRUE)
@@ -131,15 +151,32 @@ if(NOT BEAST_FOUND)
     elseif(TARGET boost-beast)
         set(BEAST_FOUND TRUE)
         message(STATUS "Found Boost.Beast from auto-generated vcpkg: boost-beast")
+    else()
+        # Try to find Beast as part of Boost installation
+        if(Boost_FOUND)
+            find_path(BOOST_BEAST_INCLUDE_DIR
+                NAMES boost/beast.hpp
+                PATHS ${Boost_INCLUDE_DIRS}
+                NO_DEFAULT_PATH
+            )
+
+            if(BOOST_BEAST_INCLUDE_DIR)
+                set(BEAST_FOUND TRUE)
+                message(STATUS "Found Boost.Beast as part of Boost installation: ${BOOST_BEAST_INCLUDE_DIR}")
+                # Create Beast target
+                if(NOT TARGET Boost::beast)
+                    add_library(Boost::beast INTERFACE IMPORTED)
+                    set_target_properties(Boost::beast PROPERTIES
+                        INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+                        INTERFACE_LINK_LIBRARIES "${Boost_LIBRARIES}"
+                    )
+                endif()
+            endif()
+        endif()
     endif()
 
-    if(BEAST_FOUND)
-        find_package(Boost QUIET COMPONENTS system regex thread chrono date_time)
-        if(NOT Boost_FOUND)
-            message(FATAL_ERROR "Boost components not found in auto-generated vcpkg")
-        endif()
-    else()
-        message(FATAL_ERROR "Failed to find Boost.Beast after auto-generating vcpkg")
+    if(NOT BEAST_FOUND)
+        message(FATAL_ERROR "Failed to find Boost.Beast after auto-generating vcpkg. Available packages: ${vcpkg_list_output}")
     endif()
 endif()
 
