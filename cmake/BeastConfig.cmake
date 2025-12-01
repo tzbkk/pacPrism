@@ -157,14 +157,20 @@ if(NOT BEAST_FOUND)
         message(STATUS "Boost.Beast CONFIG not found, creating target from vcpkg headers...")
 
         # Find the boost-beast include directory in vcpkg
+        # Check if boost-beast is installed in the standard vcpkg location
+        set(VCPKG_INSTALLED_DIR "${VCPKG_ROOT}/installed/${vcpkg_triplet}")
+        if(EXISTS "${VCPKG_INSTALLED_DIR}")
+            set(VCPKG_INCLUDE_DIR "${VCPKG_INSTALLED_DIR}/include")
+        else()
+            # Fallback to common triplet names
+            set(VCPKG_INCLUDE_DIR "${VCPKG_ROOT}/installed/x64-linux/include")
+        endif()
+
+        message(STATUS "Looking for boost/beast.hpp in ${VCPKG_INCLUDE_DIR}")
+
         find_path(BOOST_BEAST_INCLUDE_DIR
             NAMES boost/beast.hpp
-            PATHS
-                "${VCPKG_ROOT}/installed/${vcpkg_triplet}/include"
-                "${VCPKG_ROOT}/installed/x64-linux/include"
-                "${VCPKG_ROOT}/installed/x64-osx/include"
-                "${VCPKG_ROOT}/installed/x64-windows/include"
-                "${VCPKG_ROOT}/installed/x86-windows/include"
+            PATHS "${VCPKG_INCLUDE_DIR}"
             NO_DEFAULT_PATH
         )
 
