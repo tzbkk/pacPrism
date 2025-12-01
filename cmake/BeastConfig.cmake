@@ -103,6 +103,8 @@ if(NOT BEAST_FOUND)
         endif()
     endif()
 
+    message(STATUS "Detected vcpkg triplet: ${vcpkg_triplet}")
+
     execute_process(
         COMMAND "${VCPKG_ROOT}/vcpkg" install --triplet ${vcpkg_triplet}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
