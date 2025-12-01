@@ -41,6 +41,20 @@ if(NOT BEAST_FOUND)
     message(STATUS "Boost.Beast not found, fetching via FetchContent...")
     include(FetchContent)
 
+    # First fetch Boost.Asio since Beast depends on it
+    if(NOT TARGET Boost::asio AND NOT TARGET asio)
+        FetchContent_Declare(
+            asio
+            GIT_REPOSITORY https://github.com/boostorg/asio.git
+            GIT_TAG        boost-1.85.0
+        )
+        FetchContent_MakeAvailable(asio)
+
+        if(TARGET asio AND NOT TARGET Boost::asio)
+            add_library(Boost::asio ALIAS asio)
+        endif()
+    endif()
+
     FetchContent_Declare(
         boost-beast
         GIT_REPOSITORY https://github.com/boostorg/beast.git
@@ -85,6 +99,10 @@ function(configure_beast target_name)
         target_link_libraries(${target_name} PRIVATE Boost::regex)
     endif()
 
-    # Note: Using asio from boost-beast, no standalone asio needed
-    # boost::beast includes asio in boost namespace
+    # Link with Boost::asio if available
+    if(TARGET Boost::asio)
+        target_link_libraries(${target_name} PRIVATE Boost::asio)
+    elseif(TARGET asio)
+        target_link_libraries(${target_name} PRIVATE asio)
+    endif()
 endfunction()
