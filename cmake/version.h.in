@@ -21,8 +21,8 @@ constexpr const char* VERSION_SHORT = "@PACPRISM_VERSION_SHORT@";
 constexpr const char* BUILD_TYPE = "@PACPRISM_BUILD_TYPE@";
 constexpr const char* BUILD_DATE = "@PACPRISM_BUILD_DATE@";
 
-#ifdef PACPRISM_GIT_VERSION
-constexpr const char* GIT_VERSION = "@PACPRISM_GIT_VERSION@";
+#ifdef PACPRISM_GIT_DESCRIBE
+constexpr const char* GIT_VERSION = "@PACPRISM_GIT_DESCRIBE@";
 #else
 constexpr const char* GIT_VERSION = "unknown";
 #endif
@@ -43,7 +43,7 @@ inline std::string getVersionShort() {
 }
 
 inline std::string getBuildInfo() {
-    return std::string(VERSION_FULL) + " (" + BUILD_TYPE + ", " + BUILD_DATE + ")";
+    return std::string(BUILD_TYPE) + " (" + BUILD_DATE + ")";
 }
 
 inline std::string getGitInfo() {

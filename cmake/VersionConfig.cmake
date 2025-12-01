@@ -32,28 +32,32 @@ set(PACPRISM_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
 
 # Build information
 if(NOT PACPRISM_BUILD_TYPE)
-    set(PACPRISM_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
+    if(CMAKE_BUILD_TYPE)
+        set(PACPRISM_BUILD_TYPE "${CMAKE_BUILD_TYPE}")
+    else()
+        set(PACPRISM_BUILD_TYPE "Debug")
+    endif()
 endif()
 
 if(NOT PACPRISM_BUILD_DATE)
     string(TIMESTAMP PACPRISM_BUILD_DATE "%Y-%m-%d")
 endif()
 
-# Git information (optional)
+# Git information (optional) - separate from version number
 find_package(Git QUIET)
 if(GIT_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git")
     execute_process(
-        COMMAND ${GIT_EXECUTABLE} describe --tags --always --dirty
+        COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE PACPRISM_GIT_VERSION
+        OUTPUT_VARIABLE PACPRISM_GIT_COMMIT
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_QUIET
     )
 
     execute_process(
-        COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+        COMMAND ${GIT_EXECUTABLE} describe --tags --always --dirty
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-        OUTPUT_VARIABLE PACPRISM_GIT_COMMIT
+        OUTPUT_VARIABLE PACPRISM_GIT_DESCRIBE
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_QUIET
     )
@@ -87,9 +91,9 @@ function(get_version_info target_name)
         PACPRISM_BUILD_DATE="${PACPRISM_BUILD_DATE}"
     )
 
-    if(PACPRISM_GIT_VERSION)
+    if(PACPRISM_GIT_DESCRIBE)
         target_compile_definitions(${target_name} PRIVATE
-            PACPRISM_GIT_VERSION="${PACPRISM_GIT_VERSION}"
+            PACPRISM_GIT_DESCRIBE="${PACPRISM_GIT_DESCRIBE}"
         )
     endif()
 
@@ -105,8 +109,10 @@ message(STATUS "pacPrism Version Configuration:")
 message(STATUS "  Version: ${PACPRISM_VERSION_FULL}")
 message(STATUS "  Build Type: ${PACPRISM_BUILD_TYPE}")
 message(STATUS "  Build Date: ${PACPRISM_BUILD_DATE}")
-if(PACPRISM_GIT_VERSION)
-    message(STATUS "  Git Version: ${PACPRISM_GIT_VERSION}")
+if(PACPRISM_GIT_COMMIT)
     message(STATUS "  Git Commit: ${PACPRISM_GIT_COMMIT}")
+endif()
+if(PACPRISM_GIT_DESCRIBE)
+    message(STATUS "  Git Describe: ${PACPRISM_GIT_DESCRIBE}")
 endif()
 message(STATUS "  Version Header: ${VERSION_HEADER_OUTPUT}")
