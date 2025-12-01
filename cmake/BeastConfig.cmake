@@ -152,24 +152,62 @@ if(NOT BEAST_FOUND)
         set(BEAST_FOUND TRUE)
         message(STATUS "Found Boost.Beast from auto-generated vcpkg: boost-beast")
     else()
-        # Try to find Beast as part of Boost installation
-        if(Boost_FOUND)
-            find_path(BOOST_BEAST_INCLUDE_DIR
-                NAMES boost/beast.hpp
-                PATHS ${Boost_INCLUDE_DIRS}
-                NO_DEFAULT_PATH
-            )
+        # boost-beast from vcpkg is header-only and doesn't provide CMake targets
+        # We need to create the target manually from installed headers
+        message(STATUS "Boost.Beast CONFIG not found, creating target from vcpkg headers...")
 
-            if(BOOST_BEAST_INCLUDE_DIR)
-                set(BEAST_FOUND TRUE)
-                message(STATUS "Found Boost.Beast as part of Boost installation: ${BOOST_BEAST_INCLUDE_DIR}")
-                # Create Beast target
-                if(NOT TARGET Boost::beast)
-                    add_library(Boost::beast INTERFACE IMPORTED)
-                    set_target_properties(Boost::beast PROPERTIES
-                        INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
-                        INTERFACE_LINK_LIBRARIES "${Boost_LIBRARIES}"
-                    )
+        # Find the boost-beast include directory in vcpkg
+        find_path(BOOST_BEAST_INCLUDE_DIR
+            NAMES boost/beast.hpp
+            PATHS
+                "${VCPKG_ROOT}/installed/${vcpkg_triplet}/include"
+                "${VCPKG_ROOT}/installed/x64-linux/include"
+                "${VCPKG_ROOT}/installed/x64-osx/include"
+                "${VCPKG_ROOT}/installed/x64-windows/include"
+                "${VCPKG_ROOT}/installed/x86-windows/include"
+            NO_DEFAULT_PATH
+        )
+
+        message(STATUS "BOOST_BEAST_INCLUDE_DIR: ${BOOST_BEAST_INCLUDE_DIR}")
+
+        if(BOOST_BEAST_INCLUDE_DIR)
+            set(BEAST_FOUND TRUE)
+            message(STATUS "Found Boost.Beast headers in vcpkg: ${BOOST_BEAST_INCLUDE_DIR}")
+
+            # Create Boost::beast target manually
+            if(NOT TARGET Boost::beast)
+                add_library(Boost::beast INTERFACE IMPORTED)
+                set_target_properties(Boost::beast PROPERTIES
+                    INTERFACE_INCLUDE_DIRECTORIES "${BOOST_BEAST_INCLUDE_DIR}"
+                )
+
+                # Add dependencies on Boost libraries that Beast uses
+                target_link_libraries(Boost::beast INTERFACE
+                    $<TARGET_EXISTS:Boost::system>:Boost::system
+                    $<TARGET_EXISTS:Boost::regex>:Boost::regex
+                    $<TARGET_EXISTS:Boost::date_time>:Boost::date_time
+                )
+            endif()
+        else()
+            # Fallback: try to find Beast as part of Boost installation
+            if(Boost_FOUND)
+                find_path(BOOST_BEAST_INCLUDE_DIR
+                    NAMES boost/beast.hpp
+                    PATHS ${Boost_INCLUDE_DIRS}
+                    NO_DEFAULT_PATH
+                )
+
+                if(BOOST_BEAST_INCLUDE_DIR)
+                    set(BEAST_FOUND TRUE)
+                    message(STATUS "Found Boost.Beast as part of Boost installation: ${BOOST_BEAST_INCLUDE_DIR}")
+                    # Create Beast target
+                    if(NOT TARGET Boost::beast)
+                        add_library(Boost::beast INTERFACE IMPORTED)
+                        set_target_properties(Boost::beast PROPERTIES
+                            INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+                            INTERFACE_LINK_LIBRARIES "${Boost_LIBRARIES}"
+                        )
+                    endif()
                 endif()
             endif()
         endif()
