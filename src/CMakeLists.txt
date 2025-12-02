@@ -16,6 +16,3 @@ get_version_info(pacprism)
 
 # Configure network dependencies for executable
 configure_network_dependencies(pacprism)
-
-# Configure Boost.Beast for executable (since it includes transmission headers)
-configure_beast(pacprism)

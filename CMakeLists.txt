@@ -16,9 +16,6 @@ include(VersionConfig)
 # Platform-specific configurations
 include(PlatformConfig)
 
-# External dependencies
-include(BeastConfig)
-
 # Build configuration
 include(BuildConfig)
 
