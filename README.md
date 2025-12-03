@@ -82,7 +82,6 @@ pacPrism employs a **"centralized access layer + decentralized data layer"** hyb
 
 ## Documentation
 
-- [Build Guide](docs/BUILD_GUIDE.md) - Detailed build instructions and optimization
 - [Version System](docs/VERSION_SYSTEM.md) - Modular version management system
 - [Current Status](docs/CURRENT_STATUS.md) - Development status and roadmap
 - [Chinese Devlog](devlog_zh/README_DEVLOG.md) - Development progress log (Chinese)
@@ -92,7 +91,7 @@ pacPrism employs a **"centralized access layer + decentralized data layer"** hyb
 ### Prerequisites
 - **CMake 3.14+**
 - **C++23 compatible compiler** (GCC 13+, Clang 14+, MSVC 19.36+)
-- **vcpkg** (for dependency management)
+- **vcpkg** (for auto dependency management)
 - **Git** (for version information)
 
 ### Build Instructions
@@ -126,8 +125,8 @@ chmod +x scripts/build.sh
 
 **Manual Build (Cross-platform):**
 ```bash
-# Clone the repository (including submodules)
-git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
+# Clone the repository
+git clone https://github.com/tzbkk/pacPrism.git
 cd pacPrism
 
 # Configure the project

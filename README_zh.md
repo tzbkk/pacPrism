@@ -82,7 +82,6 @@ pacPrism 采用**"集中化访问层 + 去中心化数据层"**混合方法：
 
 ## 📚 文档
 
-- [构建指南](docs/BUILD_GUIDE.md) - 详细构建说明与优化
 - [版本系统](docs/VERSION_SYSTEM.md) - 模块化版本管理系统
 - [当前状态](docs/CURRENT_STATUS.md) - 项目开发现状与路线图
 - [开发日志](devlog_zh/README_DEVLOG.md) - 中文开发进度记录
@@ -90,8 +89,10 @@ pacPrism 采用**"集中化访问层 + 去中心化数据层"**混合方法：
 ## 安装
 
 ### 先决条件
-- CMake 3.14 或更高版本
-- C++23 兼容编译器
+- **CMake 3.14+**
+- **C++23 编译器** (GCC 13+, Clang 14+, MSVC 19.36+)
+- **vcpkg** (自动依赖管理)
+- **Git** (以获取版本信息)
 
 ### 构建说明
 
@@ -124,8 +125,8 @@ chmod +x scripts/build.sh
 
 **手动构建 (跨平台):**
 ```bash
-# 克隆仓库 (包含submodule)
-git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
+# 克隆仓库
+git clone https://github.com/tzbkk/pacPrism.git
 cd pacPrism
 
 # 配置项目
