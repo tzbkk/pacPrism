@@ -1,6 +1,6 @@
 # pacPrism 当前开发状态
 
-## 📊 项目概览 (2025-11-30)
+## 📊 项目概览 (2025-12-03)
 
 **项目版本**: Alpha 0.1.0
 **构建系统**: CMake 3.14+ with vcpkg
@@ -16,10 +16,12 @@
 - **DHT操作类** - 完整的分布式哈希表实现
 
 ### 🔧 构建与依赖管理
+- **跨平台构建脚本** - PowerShell (build.ps1) 和 Bash (build.sh) 支持
 - **vcpkg集成** - 跨平台依赖管理，仅依赖`boost-beast`
-- **自动化构建** - 无需手动安装依赖，CMake自动处理
+- **自动化构建** - 无需手动安装依赖，一键构建脚本
 - **模块化设计** - 清晰的库分离和目标配置
 - **版本控制** - Git信息自动注入和构建时间戳
+- **Git submodule** - vcpkg作为submodule集成，确保版本一致性
 
 ### 🌐 网络功能
 - **HTTP服务器** - 异步I/O，支持并发连接
@@ -65,13 +67,35 @@
 
 ## 🚀 运行状态
 
-### 启动示例
+### 构建和启动示例
+
+**Windows (PowerShell):**
+```powershell
+# 运行自动构建脚本
+.\scripts\build.ps1
+
+# 启动HTTP服务器
+.\build\bin\pacprism.exe
+```
+
+**Linux/macOS (Bash):**
+```bash
+# 运行自动构建脚本
+chmod +x scripts/build.sh
+./scripts/build.sh
+
+# 启动HTTP服务器
+./build/bin/pacprism
+```
+
+**手动构建 (跨平台):**
 ```bash
 # 构建项目
 cmake --build build
 
 # 启动HTTP服务器
-./build/bin/pacprism.exe
+./build/bin/pacprism
+```
 
 # 输出示例
 pacPrism - Semi-decentralized Package Distribution System
@@ -80,7 +104,6 @@ Build: 0.1.0 (, 2025-11-30)
 Git: c2f0ec0-dirty [c2f0ec0]
 Starting HTTP server...
 Server started, listening on port 8080
-```
 
 ### HTTP测试
 ```bash
@@ -122,8 +145,12 @@ curl http://localhost:8080/
 - **lib/node/dht/dht_operation.cpp** - DHT操作完整实现
 
 ### 配置文件
-- **scripts/VersionConfig.cmake** - 版本管理和CMake模块化
-- **scripts/BeastConfig.cmake** - Boost.Beast依赖配置
+- **cmake/VersionConfig.cmake** - 版本管理和CMake模块化
+- **cmake/LibraryConfig.cmake** - 库目标配置
+- **cmake/BuildConfig.cmake** - 构建系统配置
+- **cmake/PlatformConfig.cmake** - 跨平台配置
+- **scripts/build.ps1** - Windows PowerShell构建脚本
+- **scripts/build.sh** - Linux/macOS Bash构建脚本
 - **vcpkg.json** - 项目依赖，仅包含`boost-beast`
 
 ### 生成的文件
@@ -166,19 +193,25 @@ curl http://localhost:8080/
 - **并发优化**: 改进多线程性能
 - **缓存策略**: 实现智能文件缓存
 
-## 最新更新 (2025-11-30)
+## 最新更新 (2025-12-03)
 
-**🔧 CMake配置优化完成**:
-- 移除standalone asio依赖，使用boost-beast内置asio
-- 实现模块化版本系统
-- 优化vcpkg.json依赖管理
-- 更新所有技术文档组织结构
+**🔧 构建脚本系统重构完成**:
+- 创建跨平台构建脚本 (PowerShell + Bash)
+- 更新所有构建说明和使用文档
+- 集成vcpkg submodule支持
+- 移除冗余构建文件，简化构建流程
 
-**📚 文档系统重构完成**:
-- 创建docs/目录存放技术文档
-- 完善构建指南和版本系统文档
-- 建立清晰的文档导航和索引结构
-- 更新主README链接到正确文档位置
+**📚 文档系统更新完成**:
+- 更新中英文README文件，添加详细构建步骤
+- 创建今日开发日志，记录重构过程
+- 更新devlog索引，添加新日志条目
+- 更新CURRENT_STATUS.md，反映最新项目状态
+
+**🛠️ 技术债务解决**:
+- 统一boost-beast依赖管理，移除asio冲突
+- 模块化CMake配置组织，移动到cmake/目录
+- 提供清晰的git submodule初始化指导
+- 实现真正的零配置跨平台构建体验
 
 ---
-*📝 最后更新: 2025-11-30*
+*📝 最后更新: 2025-12-03*
