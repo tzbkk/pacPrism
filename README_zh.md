@@ -95,9 +95,37 @@ pacPrism 采用**"集中化访问层 + 去中心化数据层"**混合方法：
 
 ### 构建说明
 
+**Windows (PowerShell):**
+```powershell
+# 克隆仓库 (包含submodule)
+git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
+cd pacPrism
+
+# 运行自动构建脚本
+.\scripts\build.ps1
+
+# 运行 pacPrism
+.\build\bin\pacprism.exe
+```
+
+**Linux/macOS (Bash):**
 ```bash
-# 克隆仓库
-git clone https://github.com/tzbkk/pacPrism.git
+# 克隆仓库 (包含submodule)
+git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
+cd pacPrism
+
+# 运行自动构建脚本
+chmod +x scripts/build.sh
+./scripts/build.sh
+
+# 运行 pacPrism
+./build/bin/pacprism
+```
+
+**手动构建 (跨平台):**
+```bash
+# 克隆仓库 (包含submodule)
+git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
 cd pacPrism
 
 # 配置项目

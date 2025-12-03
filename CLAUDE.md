@@ -19,6 +19,20 @@ The system follows a "centralized access layer + decentralized data layer" hybri
 
 ### Building the Project
 
+**Windows (PowerShell):**
+```powershell
+# Run the automated build script
+.\scripts\build.ps1
+```
+
+**Linux/macOS (Bash):**
+```bash
+# Run the automated build script
+chmod +x scripts/build.sh
+./scripts/build.sh
+```
+
+**Manual Build (Cross-platform):**
 ```bash
 # Configure the project (automatically handles dependencies)
 cmake -B build

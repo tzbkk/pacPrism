@@ -97,9 +97,37 @@ pacPrism employs a **"centralized access layer + decentralized data layer"** hyb
 
 ### Build Instructions
 
+**Windows (PowerShell):**
+```powershell
+# Clone the repository (including submodules)
+git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
+cd pacPrism
+
+# Run the automated build script
+.\scripts\build.ps1
+
+# Run pacPrism
+.\build\bin\pacprism.exe
+```
+
+**Linux/macOS (Bash):**
 ```bash
-# Clone the repository
-git clone https://github.com/tzbkk/pacPrism.git
+# Clone the repository (including submodules)
+git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
+cd pacPrism
+
+# Run the automated build script
+chmod +x scripts/build.sh
+./scripts/build.sh
+
+# Run pacPrism
+./build/bin/pacprism
+```
+
+**Manual Build (Cross-platform):**
+```bash
+# Clone the repository (including submodules)
+git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
 cd pacPrism
 
 # Configure the project
