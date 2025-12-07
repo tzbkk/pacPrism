@@ -1,6 +1,6 @@
 # pacPrism
 
-![pacPrism Banner](assets/prism-banner.svg)
+![pacPrism Banner](assets/prism-banner.png)
 
 > A semi-decentralized package distribution system for Debian GNU/Linux
 
