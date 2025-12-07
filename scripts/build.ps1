@@ -6,6 +6,20 @@ $ABS_SCRIPT_DIR = Resolve-Path $ABS_SCRIPT_DIR
 $PROJ_ROOT = Split-Path -Parent $ABS_SCRIPT_DIR
 $PROJ_ROOT = Resolve-Path $PROJ_ROOT
 
+# Windows only: vswhere.exe
+Write-Host "Checking for Visual Studio C++ build tools..."
+try {
+    $VS_INFO = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Product.BuildTools -property installationPath 2>$null
+    if (-not $VS_INFO) {
+        Write-Host "Error: Visual Studio with C++ tools not found. Please install Visual Studio with C++ development workload." -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "Visual Studio C++ build tools found."
+} catch {
+    Write-Host "Error: Visual Studio with C++ tools not found. Please install Visual Studio with C++ development workload." -ForegroundColor Red
+    exit 1
+}
+
 # Check the integrity.
 $VCPKG_ROOT = Join-Path $PROJ_ROOT "vcpkg"
 if (Test-Path $VCPKG_ROOT) {

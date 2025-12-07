@@ -79,9 +79,12 @@ pacPrism 采用**"集中化访问层 + 去中心化数据层"**混合方法：
   → HTTP/1.1服务器实现，异步I/O
 - **包管理**: **vcpkg**
   → 跨平台依赖管理
+- **第三方依赖**: **Boost.Beast 1.89.0**
+  → C++ HTTP和WebSocket库 (包含Boost.Asio异步I/O支持)
 
 ## 📚 文档
 
+- [项目架构](docs/PROJECT_STRUCTURE.md) - 完整的项目架构和文件组织
 - [版本系统](docs/VERSION_SYSTEM.md) - 模块化版本管理系统
 - [当前状态](docs/CURRENT_STATUS.md) - 项目开发现状与路线图
 - [开发日志](devlog_zh/README_DEVLOG.md) - 中文开发进度记录
@@ -91,6 +94,7 @@ pacPrism 采用**"集中化访问层 + 去中心化数据层"**混合方法：
 ### 先决条件
 - **CMake 3.14+**
 - **C++23 编译器** (GCC 13+, Clang 14+, MSVC 19.36+)
+- **Visual Studio Build Tools** (仅Windows，vcpkg配置C++依赖所必需)
 - **vcpkg** (自动依赖管理)
 - **Git** (以获取版本信息)
 
@@ -156,14 +160,7 @@ cmake --build build --target clean
 
 ### 项目结构
 
-```
-pacPrism/
-├── CMakeLists.txt          # 根 CMake 配置
-├── src/                    # 主应用程序源码
-├── lib/                    # 库组件
-├── include/                # 头文件
-└── docs/                   # 文档和 GitHub Pages
-```
+详细的项目架构和文件组织，请参阅 [项目架构文档](docs/PROJECT_STRUCTURE.md)。
 
 ## 未来路线图
 

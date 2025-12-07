@@ -139,6 +139,8 @@ curl http://localhost:8080/
 
 ## 📁 关键文件说明
 
+> **💡 完整的项目架构和文件组织请参阅 [项目架构文档](PROJECT_STRUCTURE.md)**
+
 ### 核心实现文件
 - **src/main.cpp** - 应用程序入口，版本信息显示
 - **lib/network/transmission/transmission.cpp** - HTTP服务器核心实现

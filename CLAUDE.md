@@ -50,11 +50,12 @@ cmake --build build --target clean
 
 ### Automatic Dependency Management
 
-The build system automatically handles dependency installation:
-- **asio** library is automatically fetched and configured if not found locally
+The build system automatically handles dependency installation via vcpkg:
+- **Boost.Beast 1.89.0** library is automatically fetched and configured
 - Works seamlessly across Windows and Linux platforms
 - Maintains compatibility with existing dependency management approaches
 - No manual dependency installation required for new developers
+- **Windows Prerequisite**: Visual Studio Build Tools with C++ compiler must be installed
 
 ### Running the Application
 
@@ -103,8 +104,10 @@ Implements core Distributed Hash Table functionality:
 ## Technology Stack
 
 - **Core System**: C++23 for high performance and fine-grained memory control
-- **Build System**: CMake 3.14+
+- **Build System**: CMake 3.14+ with vcpkg integration
+- **Networking**: Boost.Beast 1.89.0 (includes Boost.Asio for async I/O)
 - **Project Management**: Modern CMake practices with target-based approach
+- **Third-party Dependencies**: Boost.Beast (HTTP/WebSocket library)
 
 ## Current Development Status
 

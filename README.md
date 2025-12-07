@@ -79,9 +79,12 @@ pacPrism employs a **"centralized access layer + decentralized data layer"** hyb
   → HTTP/1.1 server implementation with async I/O
 - **Package Management**: **vcpkg**
   → Cross-platform dependency management
+- **Third-party Dependencies**: **Boost.Beast 1.89.0**
+  → HTTP and WebSocket library for C++ (includes Boost.Asio for async I/O)
 
 ## Documentation
 
+- [Project Structure](docs/PROJECT_STRUCTURE.md) - Complete project architecture and file organization
 - [Version System](docs/VERSION_SYSTEM.md) - Modular version management system
 - [Current Status](docs/CURRENT_STATUS.md) - Development status and roadmap
 - [Chinese Devlog](devlog_zh/README_DEVLOG.md) - Development progress log (Chinese)
@@ -91,6 +94,7 @@ pacPrism employs a **"centralized access layer + decentralized data layer"** hyb
 ### Prerequisites
 - **CMake 3.14+**
 - **C++23 compatible compiler** (GCC 13+, Clang 14+, MSVC 19.36+)
+- **Visual Studio Build Tools** (Windows only, required for vcpkg to configure C++ dependencies)
 - **vcpkg** (for auto dependency management)
 - **Git** (for version information)
 
@@ -156,36 +160,7 @@ cmake --build build --target clean
 
 ### Project Structure
 
-```
-pacPrism/
-├── CMakeLists.txt          # Root CMake configuration
-├── vcpkg.json              # vcpkg dependency management
-├── scripts/                 # CMake configuration modules
-│   ├── VersionConfig.cmake    # Version management system
-│   ├── BeastConfig.cmake     # Boost.Beast configuration
-│   ├── LibraryConfig.cmake   # Library target configuration
-│   └── BuildConfig.cmake     # Build system configuration
-├── cmake/                   # CMake templates
-│   └── version.h.in          # Version header template
-├── src/                     # Main application source
-│   ├── main.cpp               # Application entry point
-│   └── CMakeLists.txt         # Executable configuration
-├── lib/                     # Library components
-│   ├── node/dht/              # DHT implementation
-│   │   ├── dht_operation.cpp  # DHT operations
-│   │   └── CMakeLists.txt     # DHT library config
-│   └── network/              # Network layer
-│       ├── transmission/        # HTTP transmission
-│       │   ├── transmission.cpp # HTTP server implementation
-│       │   └── CMakeLists.txt # Network library config
-│       └── CMakeLists.txt     # Network module config
-├── include/                  # Header files
-│   ├── network/transmission/   # Network headers
-│   └── node/                 # DHT and data structures
-└── docs/                     # Documentation
-    ├── VERSION_SYSTEM.md        # Version system documentation
-    └── README_DEVLOG.md       # Development log index
-```
+For detailed project architecture and file organization, see [Project Structure Documentation](docs/PROJECT_STRUCTURE.md).
 
 ## Future Roadmap
 
