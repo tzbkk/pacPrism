@@ -5,14 +5,26 @@
 #include "node/dht/dht_operation.h"
 
 int main() {
+    // Print banner and version info.
     std::cout << "\033[32mpacPrism - Semi-decentralized Package Distribution System\033[0m" << std::endl;
     std::cout << "Version \033[34m" << pacprism::getVersionFull() << "\033[0m" << std::endl;
-    std::cout << "Build: \033[33m" << pacprism::getBuildInfo() << "\033[0m" << std::endl;
+    std::cout << "Build \033[33m" << pacprism::getBuildInfo() << "\033[0m" << std::endl;
     if (pacprism::getGitInfo() != "no git info") {
         std::cout << "Git: \033[35m" << pacprism::getGitInfo() << "\033[0m" << std::endl;
     }
-    std::cout << "Starting HTTP server..." << std::endl;
 
+    // TODO: Complete HDT initing.
+    // Init DHT.
+    std::cout << "Initing DHT..." << std::endl;
+    try {
+        dht_operation dht;
+    } catch (const std::exception& e) {
+        std::cerr << "DHT initing error: " << e.what() << std::endl;
+        return 1;
+    }
+
+    // Init server.
+    std::cout << "Starting HTTP server..." << std::endl;
     try {
         // Create IO context
         boost::asio::io_context io_context;

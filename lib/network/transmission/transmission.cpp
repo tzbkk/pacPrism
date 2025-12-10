@@ -5,6 +5,7 @@
 #include <boost/asio.hpp>
 #include <memory>
 #include <array>
+#include "pacPrism/version.h"
 
 // ServerTrans implementation
 ServerTrans::ServerTrans(net::io_context& io_context)
@@ -56,7 +57,8 @@ void ServerTrans::read_from_connection(std::shared_ptr<tcp::socket> socket,
         [self, socket, buffer, req_parser](const boost::system::error_code& error, size_t bytes_transferred) {
             if (!error) {
                 // Request parsing complete, process it
-                self->process_from_read_data(socket, req_parser);
+                auto request = req_parser->release();
+                self->response_builder(socket, request);
             } else {
                 if (error == http::error::end_of_stream) {
                     std::cout << "Read from " << socket->remote_endpoint() << " ended." << std::endl;
@@ -69,26 +71,42 @@ void ServerTrans::read_from_connection(std::shared_ptr<tcp::socket> socket,
         });
 }
 
-void ServerTrans::process_from_read_data(std::shared_ptr<tcp::socket> socket,
-                                         std::shared_ptr<http::request_parser<http::string_body>> req_parser) {
-    auto request = req_parser->release();
-    // std::cout << "Received " << request.method_string() << " request for: " << request.target() << std::endl;
-
-    // Send the response
-    response_builder(socket, request);
-}
-
 void ServerTrans::response_builder(std::shared_ptr<tcp::socket> socket, const http::request<http::string_body>& request) {
     auto self = shared_from_this();
 
-    // Create a simple response for now
-    auto response = std::make_shared<http::response<http::string_body>>(http::status::ok, request.version());
-    response->set(http::field::server, "pacPrism/0.1.0");
-    response->set(http::field::content_type, "text/plain");
-    response->body() = "Hello from pacPrism!";
-    response->prepare_payload();
+    // Get the custom header "Operation".
+    // If no Operation header, send a default response.
+    std::string operation;
+    auto it = request.find("Operation");
+    if (it != request.end()) {
+        operation = it->value();
+    } else {
+        // Create a default response and call response_sender.
+        auto response = std::make_shared<http::response<http::string_body>>(http::status::ok, request.version());
 
-    // Send the response
+        // Define server header.
+        std::string server = "pacPrism/";
+        server.append(pacprism::getVersionFull());
+
+        // Define body header.
+        std::string body = "Hello from pacPrism!\n";
+        body.append("Version ").append(pacprism::getVersionFull()).append("\n").append("Build ").append(pacprism::getBuildInfo()).append("\n");
+
+        // Make response.
+        response->set(http::field::server, server);
+        response->set(http::field::content_type, "text/plain");
+        response->body() = "Hello from pacPrism!";
+        response->prepare_payload();
+
+        // Send the response.
+        self->response_sender(socket, response);
+        return;
+    }
+}
+
+void ServerTrans::response_sender(std::shared_ptr<tcp::socket> socket, std::shared_ptr<http::response<http::string_body>> response) {
+    auto self = shared_from_this();
+
     http::async_write(*socket, *response,
         [self, socket, response](const boost::system::error_code& error, size_t bytes_transferred) {
             if (!error) {

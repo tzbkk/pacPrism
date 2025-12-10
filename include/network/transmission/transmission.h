@@ -39,12 +39,12 @@ private:
     // Read individual client connections.
     void read_from_connection(std::shared_ptr<tcp::socket> socket,
                               std::shared_ptr<beast::flat_buffer> buffer,
-                              std::shared_ptr<http::request_parser<http::string_body>> req_parser);
+                              std::shared_ptr<http::request_parser<http::string_body>> req_parser);                             
     // Build a response.
     void response_builder(std::shared_ptr<tcp::socket> socket, const http::request<http::string_body>& request);
-    // Process data read.
-    void process_from_read_data(std::shared_ptr<tcp::socket> socket,
-                                std::shared_ptr<http::request_parser<http::string_body>> req_parser);
+    // Send a response.
+    void response_sender(std::shared_ptr<tcp::socket> socket,
+                         std::shared_ptr<http::response<http::string_body>> response);
 
 private:
     // Member variables
