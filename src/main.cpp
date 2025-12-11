@@ -13,7 +13,6 @@ int main() {
         std::cout << "Git: \033[35m" << pacprism::getGitInfo() << "\033[0m" << std::endl;
     }
 
-    // TODO: Complete HDT initing.
     // Init DHT.
     std::cout << "Initing DHT..." << std::endl;
     try {

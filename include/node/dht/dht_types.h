@@ -7,14 +7,14 @@
 #include <node/sharding/sharding_types.h>
 #include <iostream>
 #include <cstdint>
-#include <vector>
+#include <unordered_map>
 
 // struct dht_entry: entry for DHT, 
 // including a node's ip, sharding,
 // timestamp and TTL.
 struct dht_entry {
     std::string node_ip;
-    std::vector<sharding> node_sharding;
+    std::unordered_map<std::string, sharding> node_sharding;
     int64_t entry_timestamp;
     int64_t node_ttl;
 };
