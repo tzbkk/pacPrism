@@ -8,6 +8,7 @@
 #include <map>
 #include <unordered_map>
 #include <set>
+#include <optional>
 
 // DHT operation class for managing distributed hash table entries
 class dht_operation {
