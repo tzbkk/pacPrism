@@ -1,6 +1,6 @@
 # pacPrism 当前开发状态
 
-## 📊 项目概览 (2025-12-03)
+## 📊 项目概览 (2025-12-11)
 
 **项目版本**: Alpha 0.1.0
 **构建系统**: CMake 3.14+ with vcpkg
@@ -55,14 +55,14 @@
 ### DHT操作 (node_dht.dll)
 ```cpp
 ✅ dht_operation - DHT核心操作
-   ├── store_entry() - 存储节点条目
-   ├── query_entry() - 查询节点信息
-   ├── remove_entry() - 删除过期条目
+   ├── store_entry() - 存储节点条目 (O(1) 优化)
+   ├── query_entry() - 查询节点信息 (返回std::optional<dht_entry>)
+   ├── remove_entry() - 删除过期条目 (私有方法)
    └── clean_by_ttl() - TTL清理机制
 
-✅ 数据结构
-   ├── dht_entry - 节点信息结构
-   └── sharding - 分片信息结构
+✅ 数据结构 (2025-12-11优化)
+   ├── dht_entry - 节点信息结构 (使用unordered_map存储分片)
+   └── sharding - 分片信息结构 (作为unordered_map的值)
 ```
 
 ## 🚀 运行状态
@@ -113,11 +113,12 @@ curl http://localhost:8080/
 
 ## ⏳ 下一步开发计划
 
-### 优先级1: DHT集成 (立即开始)
-- [ ] 在`process_from_read_data()`中集成DHT查询
-- [ ] 实现APT请求处理逻辑
-- [ ] 添加包文件查找功能
-- [ ] 设计节点发现机制
+### 优先级1: Router实现 (立即开始)
+- [ ] 设计Router类处理"Operation"HTTP头
+- [ ] 实现DHT单例模式或依赖注入机制
+- [ ] 在`response_builder()`中集成Router
+- [ ] 添加DHT操作的HTTP API接口 (store/query/clean)
+- [ ] 实现请求体JSON解析和响应格式化
 
 ### 优先级2: P2P通信 (短期目标)
 - [ ] 实现ClientTrans P2P客户端
@@ -195,25 +196,24 @@ curl http://localhost:8080/
 - **并发优化**: 改进多线程性能
 - **缓存策略**: 实现智能文件缓存
 
-## 最新更新 (2025-12-03)
+## 最新更新 (2025-12-11)
 
-**🔧 构建脚本系统重构完成**:
-- 创建跨平台构建脚本 (PowerShell + Bash)
-- 更新所有构建说明和使用文档
-- 集成vcpkg submodule支持
-- 移除冗余构建文件，简化构建流程
+**🔧 DHT数据结构性能优化**:
+- 将DHT存储从vector改为unordered_map，实现O(1)查找性能
+- 优化分片存储为unordered_map，使用分片ID作为键
+- 简化store/remove/query操作，移除复杂的索引管理
+- 将remove_entry设为私有，只能被clean_by_ttl调用
+- 使用std::optional<dht_entry>改进错误处理
 
-**📚 文档系统更新完成**:
-- 更新中英文README文件，添加详细构建步骤
-- 创建今日开发日志，记录重构过程
-- 更新devlog索引，添加新日志条目
-- 更新CURRENT_STATUS.md，反映最新项目状态
+**🎯 架构设计改进**:
+- 更新头文件包含路径，使用尖括号引用系统头文件
+- 减少代码复杂度，提升可维护性
+- 为Router实现和HTTP API集成做好准备
 
-**🛠️ 技术债务解决**:
-- 统一boost-beast依赖管理，移除asio冲突
-- 模块化CMake配置组织，移动到cmake/目录
-- 提供清晰的git submodule初始化指导
-- 实现真正的零配置跨平台构建体验
+**📈 性能提升**:
+- DHT查询操作从O(n)优化到O(1)
+- 内存使用更加高效
+- 减少了80行冗余代码
 
 ---
-*📝 最后更新: 2025-12-03*
+*📝 最后更新: 2025-12-11*
