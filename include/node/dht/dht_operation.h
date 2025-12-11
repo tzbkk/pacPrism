@@ -1,7 +1,5 @@
 // DHT operations interface for pacPrism distributed hash table
-
-#ifndef DHT_OPERATION_H
-#define DHT_OPERATION_H
+#pragma once
 
 #include <node/dht/dht_types.h>
 #include <vector>
@@ -36,5 +34,3 @@ private:
     // Remove DHT entry by node IP address.
     void remove_entry(const std::string& node_ip);
 };
-
-#endif // DHT_OPERATION_H

@@ -1,5 +1,4 @@
-#ifndef TRANSMISSION_H
-#define TRANSMISSION_H
+#pragma once
 
 #include <boost/beast.hpp>
 #include <boost/asio.hpp>
@@ -39,7 +38,7 @@ private:
     // Read individual client connections.
     void read_from_connection(std::shared_ptr<tcp::socket> socket,
                               std::shared_ptr<beast::flat_buffer> buffer,
-                              std::shared_ptr<http::request_parser<http::string_body>> req_parser);                             
+                              std::shared_ptr<http::request_parser<http::string_body>> req_parser);
     // Build a response.
     void response_builder(std::shared_ptr<tcp::socket> socket, const http::request<http::string_body>& request);
     // Send a response.
@@ -68,5 +67,3 @@ private:
     // Member variables
     net::io_context& m_io_context;
 };
-
-#endif // TRANSMISSION_H
