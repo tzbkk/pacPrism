@@ -2,172 +2,118 @@
 
 ![pacPrism Banner](assets/prism-banner.png)
 
-> A semi-decentralized package distribution system for Debian GNU/Linux
+> **Distributed Caching Layer for System Packages** - High-Performance Package-Aware Transparent Proxy
 
 [中文版本](README_zh.md)
 
-## Overview
+## Core Value Proposition
 
-pacPrism is a revolutionary package distribution system that addresses the fundamental limitations of traditional "center-mirror" software distribution models. By combining **access-layer centralization** with **data-layer decentralization**, pacPrism delivers enhanced reliability, reduced latency, and lower operational costs while maintaining complete compatibility with existing Debian package management tools.
+pacPrism is a **distributed caching layer for system packages** that enhances the performance and reliability of existing package managers through transparent proxy mode. It acts as a local interceptor, seamlessly integrating with tools like APT/Pacman without requiring any additional client software.
 
-### Core Philosophy
+### Technical Features
 
-- **User Experience First**: Completely transparent to end users - simply modify `sources.list` to point to pacPrism gateway, no additional clients or plugins required
-- **Aristotelian Virtue Ethics**: Implements a "virtue-driven" node evaluation mechanism based on reliability, contribution, and local reputation, avoiding blockchain-style global ledgers
-- **Extensible Vision**: Designed to eventually support any binary artifact distribution (Docker images, npm packages, etc.), particularly benefiting network-constrained or bandwidth-expensive regions
+1. **Package-Aware Transparent Proxy**
+   - Enable by simply modifying `sources.list`, completely transparent to package managers
+   - Zero-configuration startup, maintaining full compatibility with existing workflows
+   - Automatic identification of package types, dependencies, and version information
 
-## Architecture
+2. **Semantic Sharding Mechanism**
+   - Group related packages into logical units (Shards)
+   - Ensure dependency completeness and spatial locality
+   - Reduce network round trips for cross-node dependency resolution
 
-### Hybrid Architecture Model
+3. **Hybrid Distribution Architecture**
+   - **Centralized Access Layer (Gateway)**: Provides unified entry point, compatible with existing mirror protocols
+   - **Decentralized Data Layer (P2P)**: Nodes share package caches, reducing central server load
+   - Effectively mitigates node churn issues in P2P networks
 
-pacPrism employs a **"centralized access layer + decentralized data layer"** hybrid approach:
+4. **Latency-Hidden Pipelining**
+   - Overlap computation and transmission processes
+   - Predictive prefetching of popular packages and their dependencies
+   - Parallel acquisition of multiple shards
 
-- **Access Layer (Centralized)**: **Gateway clusters** provide unified external services as the sole user entry point, ensuring compatibility and control
-- **Data Layer (Decentralized)**: **P2P network** (DHT + Gossip) distributes `.deb` packages and metadata among server nodes, achieving load distribution and redundancy tolerance
+## Architecture Design
 
 ### Core Components
 
-#### 1. Gateway Cluster (The "Intelligent Brain")
-- Receives HTTP/HTTPS requests from APT clients (simulating official repository behavior)
-- Queries DHT to obtain available node lists for target files
-- Performs intelligent scheduling based on node weight, latency, reputation
-- Automatically falls back to official sources when P2P network is unresponsive
-- Provides TLS termination, rate limiting, log auditing, and other operational capabilities
+#### 1. HTTP Transparent Proxy Layer
+```
+sources.list: http://pacprism.local:8080/debian
+                ↓
+           pacPrism Gateway
+                ↓
+        [P2P Query] or [Official Source Fallback]
+```
 
-#### 2. Peer Nodes (The "Backbone Muscles")
-- Store partial or complete Debian package replicas
-- Participate in DHT routing and Gossip protocol propagation
-- Respond to file requests from gateways or other nodes
-- Report heartbeat and local status (for anti-fragility mechanisms)
+#### 2. Semantic Sharding System
+- **Shard ID**: `core-utils`, `web-server`, `development-tools`
+- **Package Mapping**: Organize logically related packages into the same shard
+- **Spatial Locality**: Packages in the same shard typically cached on the same node
 
-#### 3. DHT & Gossip Network (The "Neural Network")
-- **DHT (Distributed Hash Table)**: Efficient file location (Key = package name/hash, Value = node address list)
-- **Gossip Protocol**: Propagates node join/exit, health status, local reputation updates
-- **Dual DHT System**: Separate DHTs for lightweight nodes (low storage, high availability) and heavyweight nodes (high capacity, stable contribution)
+#### 3. DHT Index Layer
+- **Key**: `package_name` or `shard_id`
+- **Value**: `node_ip:port` list, sorted by node health
+- **Query Routing**: Intelligent selection of optimal nodes for content retrieval
 
-#### 4. Official Sources (The "Trust Anchor")
-- Serves as the ultimate fallback source, ensuring content authenticity and integrity
-- Provides initial metadata (`Packages.gz`, `Release` files) for verification
-- All content from P2P network must pass verification against official source signatures
+#### 4. Cache Fallback Mechanism
+```
+Request → Local Cache → P2P Nodes → Official Mirror
+       ← Hit        ← Miss     ← Final Fallback
+```
 
-## Key Mechanisms
+## Implementation Status
 
-### Security-First Design
-- All transmitted content must pass signature verification from official sources
-- Gateways do not cache unverified content, preventing contamination spread
-- Node identities can be authenticated via certificates or pre-shared keys (PSK)
+### ✅ Completed
+- **HTTP Transparent Proxy Framework**: HTTP/1.1 server based on Boost.Beast
+- **DHT Memory Index**: Basic distributed hash table implementation (O(1) query performance)
+- **Cross-Platform Build System**: CMake + vcpkg automatic dependency management
 
-### Active Anti-Fragility
-- **Heartbeat Mechanism**: Nodes regularly report status, gateways dynamically adjust routing weights
-- **IPv6 Optimization**: Leverages IPv6 multicast for node discovery, reducing central registration dependency
-- **Graceful Degradation**: Seamless fallback to official sources when P2P is unavailable, transparent to users
+### 🔄 In Progress
+- **Package-Aware Routing Logic**: Intelligent distribution based on package names in HTTP headers
+- **Semantic Sharding Algorithm**: Dependency analysis and grouping strategy implementation
 
-### Virtue-Driven Node Evaluation
-- No global blockchain records; based on:
-  - **Local Reputation** (historical behavior evaluations from neighbor nodes)
-  - **Verifiable Contribution** (successful valid file deliveries count/byte count)
-  - **Implicit Weight** (online duration, bandwidth stability, etc.)
-- Weights used for DHT routing priority and gateway scheduling decisions
+### 🔬 Research Phase
+- **P2P Content Distribution Protocol**: Node-to-node file transfer and cache synchronization mechanisms
+- **Cache Prefetching Strategy**: Intelligent prefetching algorithms based on usage patterns
 
 ## Technology Stack
 
-- **Core System** (gateways, node logic, DHT/Gossip protocols): **C++23**
-  → High performance, low latency, fine-grained memory control
-- **Build System**: **CMake 3.14+**
-  → Modern CMake practices with modular configuration
-- **Networking**: **Boost.Beast** (includes built-in Boost.Asio)
-  → HTTP/1.1 server implementation with async I/O
-- **Package Management**: **vcpkg**
-  → Cross-platform dependency management
-- **Third-party Dependencies**: **Boost.Beast 1.89.0**
-  → HTTP and WebSocket library for C++ (includes Boost.Asio for async I/O)
+- **Core System**: **C++23** - High performance, low latency network processing
+- **Network Library**: **Boost.Beast 1.89.0** - HTTP/1.1 asynchronous server
+- **Build System**: **CMake 3.14+** - Cross-platform modular build
+- **Dependency Management**: **vcpkg** - Automated dependency installation
 
-## Documentation
+## Quick Start
 
-- [Project Structure](docs/PROJECT_STRUCTURE.md) - Complete project architecture and file organization
-- [Version System](docs/VERSION_SYSTEM.md) - Modular version management system
-- [Current Status](docs/CURRENT_STATUS.md) - Development status and roadmap
-- [Chinese Devlog](devlog_zh/README_DEVLOG.md) - Development progress log (Chinese)
-
-## Installation
-
-### Prerequisites
-- **CMake 3.14+**
+### Requirements
 - **C++23 compatible compiler** (GCC 13+, Clang 14+, MSVC 19.36+)
-- **Visual Studio Build Tools** (Windows only, required for vcpkg to configure C++ dependencies)
-- **vcpkg** (for auto dependency management)
-- **Git** (for version information)
+- **CMake 3.14+**
+- **Visual Studio Build Tools** (Windows only)
 
-### Build Instructions
+### Build & Run
 
-**Windows (PowerShell):**
+**Windows:**
 ```powershell
-# Clone the repository (including submodules)
 git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
 cd pacPrism
-
-# Run the automated build script
 .\scripts\build.ps1
-
-# Run pacPrism
 .\build\bin\pacprism.exe
 ```
 
-**Linux/macOS (Bash):**
+**Linux/macOS:**
 ```bash
-# Clone the repository (including submodules)
 git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
 cd pacPrism
-
-# Run the automated build script
 chmod +x scripts/build.sh
 ./scripts/build.sh
-
-# Run pacPrism
 ./build/bin/pacprism
 ```
 
-**Manual Build (Cross-platform):**
-```bash
-# Clone the repository
-git clone https://github.com/tzbkk/pacPrism.git
-cd pacPrism
+## Documentation
 
-# Configure the project
-cmake -B build
-
-# Build the project
-cmake --build build
-
-# Run pacPrism
-./build/bin/pacprism
-```
-
-## Development
-
-### Building Specific Targets
-
-```bash
-# Build only the main executable
-cmake --build build --target pacprism
-
-# Build only the network library
-cmake --build build --target network_dht
-
-# Clean build
-cmake --build build --target clean
-```
-
-### Project Structure
-
-For detailed project architecture and file organization, see [Project Structure Documentation](docs/PROJECT_STRUCTURE.md).
-
-## Future Roadmap
-
-- Support for additional distributions (Ubuntu, Arch, etc.)
-- Content prefetching and intelligent caching strategies
-- Visual topology and contribution leaderboards to incentivize node participation
-- Exploration of interoperability with IPFS or BitTorrent protocols
+- [📋 Current Development Status](docs/CURRENT_STATUS.md) - Detailed implementation progress and feature verification
+- [🏗️ Project Architecture](docs/PROJECT_STRUCTURE.md) - Complete architecture design documentation
+- [📝 Development Log](devlog_zh/README_DEVLOG.md) - Daily development records
 
 ## License
 

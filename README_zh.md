@@ -2,172 +2,118 @@
 
 ![pacPrism Banner](assets/prism-banner.png)
 
-> 面向 Debian GNU/Linux 的半去中心化软件包分发系统
+> **系统软件包的分布式缓存层** - 高性能包感知透明代理
 
 [English Version](README.md)
 
-## 概述
+## 核心价值主张
 
-pacPrism 是一个革命性的软件包分发系统，它解决了传统"中心-镜像"软件分发模式的基本限制。通过结合**访问层集中化**与**数据层去中心化**，pacPrism 提供了增强的可靠性、降低的延迟和更低的运营成本，同时保持与现有 Debian 软件包管理工具的完全兼容性。
+pacPrism 是一个针对系统软件包的**分布式缓存层**，通过透明代理模式提升现有包管理器的性能和可靠性。它作为本地拦截器，与 APT/Pacman 等工具无缝集成，无需任何额外的客户端软件。
 
-### 核心理念
+### 技术特性
 
-- **用户体验优先**：对最终用户完全透明 - 只需修改 `sources.list` 指向 pacPrism 网关，无需额外的客户端或插件
-- **亚里士多德德性伦理**：基于可靠性、贡献度和本地声誉实现"德性驱动"的节点评估机制，避免区块链式的全局账本
-- **可扩展愿景**：设计用于最终支持任何二进制制品分发（Docker 镜像、npm 包等），特别有利于网络受限或带宽昂贵的地区
+1. **包感知透明代理**
+   - 通过修改 `sources.list` 即可启用，对包管理器完全透明
+   - 零配置启动，保持与现有工作流的完全兼容性
+   - 自动识别包类型、依赖关系和版本信息
 
-## 架构
+2. **语义分片机制**
+   - 将相关包分组到逻辑单元（Shards）中
+   - 确保依赖完整性和空间局部性
+   - 减少跨节点依赖解析的网络往返次数
 
-### 混合架构模型
+3. **混合分发架构**
+   - **集中化访问层（网关）**：提供统一入口，兼容现有镜像协议
+   - **去中心化数据层（P2P）**：节点间共享包缓存，减轻中心服务器负载
+   - 有效缓解 P2P 网络的节点波动问题
 
-pacPrism 采用**"集中化访问层 + 去中心化数据层"**混合方法：
+4. **延迟隐藏流水线**
+   - 重叠计算和传输过程
+   - 预测性预取热门包及其依赖
+   - 并行化多个分片的获取过程
 
-- **访问层（集中化）**：**网关集群**作为唯一用户入口点提供统一的外部服务，确保兼容性和控制
-- **数据层（去中心化）**：**P2P 网络**（DHT + Gossip）在服务器节点间分发 `.deb` 包和元数据，实现负载分配和冗余容错
+## 架构设计
 
 ### 核心组件
 
-#### 1. 网关集群（"智能大脑"）
-- 接收来自 APT 客户端的 HTTP/HTTPS 请求（模拟官方仓库行为）
-- 查询 DHT 获取目标文件的可用节点列表
-- 基于节点权重、延迟、声誉执行智能调度
-- 当 P2P 网络无响应时自动回退到官方源
-- 提供 TLS 终止、速率限制、日志审计等运维能力
+#### 1. HTTP 透明代理层
+```
+sources.list: http://pacprism.local:8080/debian
+                ↓
+           pacPrism Gateway
+                ↓
+        [P2P 查询] 或 [官方源回退]
+```
 
-#### 2. 对等节点（"骨干肌肉"）
-- 存储部分或完整的 Debian 软件包副本
-- 参与 DHT 路由和 Gossip 协议传播
-- 响应来自网关或其他节点的文件请求
-- 报告心跳和本地状态（用于抗脆弱机制）
+#### 2. 语义分片系统
+- **Shard ID**: `core-utils`, `web-server`, `development-tools`
+- **包映射**: 将逻辑相关的包组织到同一分片中
+- **空间局部性**: 同一分片的包通常在同一节点缓存
 
-#### 3. DHT & Gossip 网络（"神经网络"）
-- **DHT（分布式哈希表）**：高效文件定位（Key = 包名/哈希，Value = 节点地址列表）
-- **Gossip 协议**：传播节点加入/退出、健康状态、本地声誉更新
-- **双 DHT 系统**：轻量级节点（低存储、高可用性）和重量级节点（高容量、稳定贡献）的独立 DHT
+#### 3. DHT 索引层
+- **Key**: `package_name` 或 `shard_id`
+- **Value**: `node_ip:port` 列表，按节点健康度排序
+- **查询路由**: 智能选择最优节点进行内容获取
 
-#### 4. 官方源（"信任锚点"）
-- 作为最终回退源，确保内容真实性和完整性
-- 提供用于验证的初始元数据（`Packages.gz`、`Release` 文件）
-- P2P 网络的所有内容必须通过官方源签名验证
+#### 4. 缓存回退机制
+```
+请求 → 本地缓存 → P2P 节点 → 官方镜像
+       ← 命中       ← 未命中   ← 最终回退
+```
 
-## 关键机制
+## 实现状态
 
-### 安全优先设计
-- 所有传输内容必须通过官方源签名验证
-- 网关不缓存未经验证的内容，防止污染传播
-- 节点身份可通过证书或预共享密钥（PSK）进行认证
+### ✅ 已完成
+- **HTTP 透明代理基础框架**: 基于 Boost.Beast 的 HTTP/1.1 服务器
+- **DHT 内存索引**: 基础的分布式哈希表实现 (O(1) 查询性能)
+- **跨平台构建系统**: CMake + vcpkg 自动依赖管理
 
-### 主动抗脆弱性
-- **心跳机制**：节点定期报告状态，网关动态调整路由权重
-- **IPv6 优化**：利用 IPv6 多播进行节点发现，减少中央注册依赖
-- **优雅降级**：当 P2P 不可用时无缝回退到官方源，对用户透明
+### 🔄 进行中
+- **包感知路由逻辑**: 根据 HTTP 头中的包名进行智能分发
+- **语义分片算法**: 依赖关系分析和分组策略实现
 
-### 德性驱动节点评估
-- 无全局区块链记录；基于：
-  - **本地声誉**（来自邻居节点的历史行为评估）
-  - **可验证贡献**（成功有效文件交付计数/字节数）
-  - **隐式权重**（在线时长、带宽稳定性等）
-- 权重用于 DHT 路由优先级和网关调度决策
+### 🔬 研究中
+- **P2P 内容分发协议**: 节点间文件传输和缓存同步机制
+- **缓存预取策略**: 基于使用模式的智能预取算法
 
 ## 技术栈
 
-- **核心系统**（网关、节点逻辑、DHT/Gossip协议）：**C++23**
-  → 高性能、低延迟、细粒度内存控制
-- **构建系统**: **CMake 3.14+**
-  → 现代CMake实践与模块化配置
-- **网络通信**: **Boost.Beast**（包含内置 Boost.Asio）
-  → HTTP/1.1服务器实现，异步I/O
-- **包管理**: **vcpkg**
-  → 跨平台依赖管理
-- **第三方依赖**: **Boost.Beast 1.89.0**
-  → C++ HTTP和WebSocket库 (包含Boost.Asio异步I/O支持)
+- **核心系统**: **C++23** - 高性能、低延迟网络处理
+- **网络库**: **Boost.Beast 1.89.0** - HTTP/1.1异步服务器
+- **构建系统**: **CMake 3.14+** - 跨平台模块化构建
+- **依赖管理**: **vcpkg** - 自动化依赖安装
 
-## 📚 文档
+## 快速开始
 
-- [项目架构](docs/PROJECT_STRUCTURE.md) - 完整的项目架构和文件组织
-- [版本系统](docs/VERSION_SYSTEM.md) - 模块化版本管理系统
-- [当前状态](docs/CURRENT_STATUS.md) - 项目开发现状与路线图
-- [开发日志](devlog_zh/README_DEVLOG.md) - 中文开发进度记录
-
-## 安装
-
-### 先决条件
+### 环境要求
+- **C++23 兼容编译器** (GCC 13+, Clang 14+, MSVC 19.36+)
 - **CMake 3.14+**
-- **C++23 编译器** (GCC 13+, Clang 14+, MSVC 19.36+)
-- **Visual Studio Build Tools** (仅Windows，vcpkg配置C++依赖所必需)
-- **vcpkg** (自动依赖管理)
-- **Git** (以获取版本信息)
+- **Visual Studio Build Tools** (仅Windows)
 
-### 构建说明
+### 构建与运行
 
-**Windows (PowerShell):**
+**Windows:**
 ```powershell
-# 克隆仓库 (包含submodule)
 git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
 cd pacPrism
-
-# 运行自动构建脚本
 .\scripts\build.ps1
-
-# 运行 pacPrism
 .\build\bin\pacprism.exe
 ```
 
-**Linux/macOS (Bash):**
+**Linux/macOS:**
 ```bash
-# 克隆仓库 (包含submodule)
 git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
 cd pacPrism
-
-# 运行自动构建脚本
 chmod +x scripts/build.sh
 ./scripts/build.sh
-
-# 运行 pacPrism
 ./build/bin/pacprism
 ```
 
-**手动构建 (跨平台):**
-```bash
-# 克隆仓库
-git clone https://github.com/tzbkk/pacPrism.git
-cd pacPrism
+## 文档
 
-# 配置项目
-cmake -B build
-
-# 构建项目
-cmake --build build
-
-# 运行 pacPrism
-./build/bin/pacprism
-```
-
-## 开发
-
-### 构建特定目标
-
-```bash
-# 仅构建主可执行文件
-cmake --build build --target pacprism
-
-# 仅构建网络库
-cmake --build build --target network_dht
-
-# 清理构建
-cmake --build build --target clean
-```
-
-### 项目结构
-
-详细的项目架构和文件组织，请参阅 [项目架构文档](docs/PROJECT_STRUCTURE.md)。
-
-## 未来路线图
-
-- 支持其他发行版（Ubuntu、Arch 等）
-- 内容预取和智能缓存策略
-- 可视化拓扑和贡献排行榜以激励节点参与
-- 探索与 IPFS 或 BitTorrent 协议的互操作性
+- [📋 当前开发状态](docs/CURRENT_STATUS.md) - 详细实现进度和功能验证
+- [🏗️ 项目架构](docs/PROJECT_STRUCTURE.md) - 完整架构设计说明
+- [📝 开发日志](devlog_zh/README_DEVLOG.md) - 每日开发记录
 
 ## 许可证
 
