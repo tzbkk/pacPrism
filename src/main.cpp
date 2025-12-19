@@ -15,12 +15,7 @@ int main() {
 
     // Init DHT.
     std::cout << "Initing DHT..." << std::endl;
-    try {
-        dht_operation dht;
-    } catch (const std::exception& e) {
-        std::cerr << "DHT initing error: " << e.what() << std::endl;
-        return 1;
-    }
+    dht_operation dht;
 
     // Init server.
     std::cout << "Starting HTTP server..." << std::endl;
