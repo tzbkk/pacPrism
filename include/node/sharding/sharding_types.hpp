@@ -8,7 +8,7 @@
 
 // struct sharding: an sharding entry including
 // its id and packages linked.
-struct sharding {
-    std::string sharding_id;
+struct shard {
+    std::string shard_id;
     std::vector<std::string> packages;
 };

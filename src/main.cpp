@@ -22,7 +22,7 @@ int main() {
 
     // Init router.
     std::cout << "Initing router..." << std::endl;
-    Router router;
+    Router router(dht);
 
 
     // Init server.

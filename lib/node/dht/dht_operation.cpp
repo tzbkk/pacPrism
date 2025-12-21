@@ -1,66 +1,77 @@
-#include <node/dht/dht_operation.hpp>
 #include <vector>
 #include <chrono>
 #include <optional>
 
+#include <node/dht/dht_operation.hpp>
+
+bool DHT_operation::verify_entry(std::string node_id) {
+    if (node_id_to_generation_timestamp_entries.contains(node_id)) {
+        return true;
+    }
+    return false;
+}
+
 void DHT_operation::store_entry(dht_entry entry) {
-    // Whether the entry exist. If not, store a new entry. Else update.
-    if (stored_entries.find(entry.node_ip) == stored_entries.end()) {
-        ttl_entries.insert({entry.entry_timestamp + entry.node_ttl, entry.node_ip});
-        stored_entries[entry.node_ip] = std::move(entry);
-    } else {
-        if (stored_entries[entry.node_ip].entry_timestamp <= entry.entry_timestamp) {
-            // Update old ttl entry.
-            ttl_entries.erase({stored_entries[entry.node_ip].entry_timestamp + stored_entries[entry.node_ip].node_ttl, entry.node_ip});
-            ttl_entries.insert({entry.entry_timestamp + entry.node_ttl, entry.node_ip});
-            this->stored_entries[entry.node_ip] = std::move(entry);
-        }
+    if (verify_entry(entry.node_id)) {
+        if (node_id_to_generation_timestamp_entries[entry.node_id] < entry.generation_timestamp) this->remove_entry(entry.node_id);
+        else return;
     }
-}
-
-std::optional<dht_entry> DHT_operation::query_entry(const std::string& node_ip) const {
-    auto query_result = stored_entries.find(node_ip);
-
-    if (query_result != stored_entries.end()) {
-        return query_result->second;
+    node_ip_to_node_id_entries[entry.node_ip] = entry.node_id;
+    node_id_to_node_ip_entries[entry.node_id] = entry.node_ip;
+    node_id_to_generation_timestamp_entries[entry.node_id] = entry.generation_timestamp;
+    expiry_timestamp_to_node_id_entries.insert({entry.expiry_timestamp, entry.node_id});
+    node_id_to_expiry_timestamp_entries[entry.node_id] = entry.expiry_timestamp;
+    for (auto shard : entry.node_shard) {
+        shard_id_to_node_ids_entries[shard.shard_id].insert(entry.node_id);
+        node_id_to_shard_ids_entries[entry.node_id].insert(shard.shard_id);
     }
-
-    return std::nullopt;
+    node_id_to_information_entries[entry.node_id] = entry.information;
+    node_id_to_liveness_entries[entry.node_id] = 0;
 }
 
-std::vector<dht_entry> DHT_operation::query_entry(const sharding& sharding_querying) const {
-    std::vector<dht_entry> result;
-
-    // Iterate through all stored entries
-    for (const auto& entry : stored_entries) {
-        // Check if this entry contains the queried sharding
-        if (entry.second.node_sharding.find(sharding_querying.sharding_id) != entry.second.node_sharding.end()) {
-            result.push_back(entry.second);
-        }
+const std::set<std::string>* DHT_operation::query_node_ids_by_shard_id(std::string shard_id_querying) {
+    if (shard_id_to_node_ids_entries.contains(shard_id_querying)) {
+        return &shard_id_to_node_ids_entries[shard_id_querying];
     }
-
-    return result;
+    return nullptr;
 }
 
-void DHT_operation::remove_entry(const std::string& node_ip) {
-    // For only dht_operation::clean_by_ttl can remove an entry,
-    // we need not to check if the entry exists again.
-    stored_entries.erase(node_ip);
+void DHT_operation::remove_entry(const std::string& node_id) {
+    if (verify_entry(node_id) == false) return;
+    const std::string& node_ip = node_id_to_node_ip_entries[node_id];
+    if (node_ip_to_node_id_entries[node_ip] == node_id) {
+        node_ip_to_node_id_entries.erase(node_ip);
+    }
+    node_id_to_node_ip_entries.erase(node_id);
+    node_id_to_generation_timestamp_entries.erase(node_id);
+    for (auto shard_id : node_id_to_shard_ids_entries[node_id]) {
+        shard_id_to_node_ids_entries[shard_id].erase(node_id);
+    }
+    expiry_timestamp_to_node_id_entries.erase({node_id_to_expiry_timestamp_entries[node_id], node_id});
+    node_id_to_expiry_timestamp_entries.erase(node_id);
+    node_id_to_shard_ids_entries.erase(node_id);
+    node_id_to_information_entries.erase(node_id);
+    node_id_to_liveness_entries.erase(node_id);
 }
 
-void DHT_operation::clean_by_ttl() {
+void DHT_operation::clean_by_expiry_time() {
     // Get current timestamp
     auto now_sec = std::chrono::duration_cast<std::chrono::seconds>(
         std::chrono::system_clock::now().time_since_epoch()
     ).count();
-    // Remove expired entries and pairs.
-    auto it = ttl_entries.begin();
-    while (it != ttl_entries.end()) {
+    // Record entries to remove.
+    std::vector<std::string> entries_to_remove;
+    auto it = expiry_timestamp_to_node_id_entries.begin();
+    while(it != expiry_timestamp_to_node_id_entries.end()) {
         if (it->first <= now_sec) {
-            DHT_operation::remove_entry(it->second);
-            it = ttl_entries.erase(it);
+            entries_to_remove.push_back(it->second);
+            it++;
         } else {
-            break; // set is sorted, remaining entries are not expired
+            break;
         }
+    }
+    // Remove expired entries and pairs.
+    for (auto node_id : entries_to_remove) {
+        remove_entry(node_id);
     }
 }
