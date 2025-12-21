@@ -6,9 +6,9 @@
 #include <boost/beast.hpp>
 #include <boost/asio.hpp>
 
-#include <network/transmission/transmission.h>
+#include <network/transmission/transmission.hpp>
 #include <pacPrism/version.h>
-#include <network/router/router.h>
+#include <network/router/router.hpp>
 
 // ServerTrans implementation
 ServerTrans::ServerTrans(net::io_context& io_context, Router& router)

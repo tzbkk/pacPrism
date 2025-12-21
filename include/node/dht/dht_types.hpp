@@ -2,7 +2,7 @@
 // - struct dht_entry
 #pragma once
 
-#include <node/sharding/sharding_types.h>
+#include <node/sharding/sharding_types.hpp>
 #include <iostream>
 #include <cstdint>
 #include <unordered_map>

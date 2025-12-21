@@ -6,7 +6,7 @@
 #include <boost/beast.hpp>
 #include <boost/asio.hpp>
 
-#include <network/router/router.h>
+#include <network/router/router.hpp>
 
 namespace beast = boost::beast;
 namespace http = beast::http;

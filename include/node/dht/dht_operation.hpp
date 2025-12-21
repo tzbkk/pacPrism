@@ -1,7 +1,7 @@
 // DHT operations interface for pacPrism distributed hash table
 #pragma once
 
-#include <node/dht/dht_types.h>
+#include <node/dht/dht_types.hpp>
 #include <vector>
 #include <map>
 #include <unordered_map>

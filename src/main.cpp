@@ -3,9 +3,9 @@
 #include <boost/asio.hpp>
 
 #include <pacPrism/version.h>
-#include <network/transmission/transmission.h>
-#include <node/dht/dht_operation.h>
-#include <network/router/router.h>
+#include <network/transmission/transmission.hpp>
+#include <node/dht/dht_operation.hpp>
+#include <network/router/router.hpp>
 
 int main() {
     // Print banner and version info.
