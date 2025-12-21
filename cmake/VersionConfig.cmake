@@ -71,7 +71,7 @@ file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/include/pacPrism")
 
 # Generate version.h template
 configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.h.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.hpp.in"
     "${VERSION_HEADER_OUTPUT}"
     @ONLY
 )
