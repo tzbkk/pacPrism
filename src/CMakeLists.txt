@@ -10,6 +10,7 @@ add_executable(pacprism main.cpp)
 # Link libraries
 target_link_libraries(pacprism PRIVATE node_dht)
 target_link_libraries(pacprism PRIVATE network_transmission)
+target_link_libraries(pacprism PRIVATE network_router)
 
 # Apply version information to executable
 get_version_info(pacprism)

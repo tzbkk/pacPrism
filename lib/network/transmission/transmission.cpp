@@ -1,15 +1,18 @@
-#include "network/transmission/transmission.h"
 #include <iostream>
 #include <sstream>
-#include <boost/beast.hpp>
-#include <boost/asio.hpp>
 #include <memory>
 #include <array>
-#include "pacPrism/version.h"
+
+#include <boost/beast.hpp>
+#include <boost/asio.hpp>
+
+#include <network/transmission/transmission.h>
+#include <pacPrism/version.h>
+#include <network/router/router.h>
 
 // ServerTrans implementation
-ServerTrans::ServerTrans(net::io_context& io_context)
-    : m_io_context(io_context) {}
+ServerTrans::ServerTrans(net::io_context& io_context, Router& router)
+    : m_io_context(io_context), m_router(router) {}
 
 void ServerTrans::start_server(const net::ip::address& address, unsigned short port) {
     using tcp = net::ip::tcp;
@@ -74,34 +77,11 @@ void ServerTrans::read_from_connection(std::shared_ptr<tcp::socket> socket,
 void ServerTrans::response_builder(std::shared_ptr<tcp::socket> socket, const http::request<http::string_body>& request) {
     auto self = shared_from_this();
 
-    // Get the custom header "Operation".
-    // If no Operation header, send a default response.
-    std::string operation;
-    auto it = request.find("Operation");
-    if (it != request.end()) {
-        operation = it->value();
-    } else {
-        // Create a default response and call response_sender.
-        auto response = std::make_shared<http::response<http::string_body>>(http::status::ok, request.version());
+    // Route.
+    auto response = m_router.route_operation(request);
 
-        // Define server header.
-        std::string server = "pacPrism/";
-        server.append(pacprism::getVersionFull());
-
-        // Define body header.
-        std::string body = "Hello from pacPrism!\n";
-        body.append("Version ").append(pacprism::getVersionFull()).append("\n").append("Build ").append(pacprism::getBuildInfo()).append("\n");
-
-        // Make response.
-        response->set(http::field::server, server);
-        response->set(http::field::content_type, "text/plain");
-        response->body() = "Hello from pacPrism!";
-        response->prepare_payload();
-
-        // Send the response.
-        self->response_sender(socket, response);
-        return;
-    }
+    // Send the response.
+    self->response_sender(socket, response);
 }
 
 void ServerTrans::response_sender(std::shared_ptr<tcp::socket> socket, std::shared_ptr<http::response<http::string_body>> response) {

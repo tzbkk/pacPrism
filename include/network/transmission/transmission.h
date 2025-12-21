@@ -1,9 +1,12 @@
 #pragma once
 
-#include <boost/beast.hpp>
-#include <boost/asio.hpp>
 #include <memory>
 #include <string>
+
+#include <boost/beast.hpp>
+#include <boost/asio.hpp>
+
+#include <network/router/router.h>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -24,8 +27,8 @@ public:
 class ServerTrans : public Transmission, public std::enable_shared_from_this<ServerTrans> {
 public:
     // Factory method for creating shared_ptr instances
-    static std::shared_ptr<ServerTrans> create(net::io_context& io_context) {
-        return std::shared_ptr<ServerTrans>(new ServerTrans(io_context));
+    static std::shared_ptr<ServerTrans> create(net::io_context& io_context, Router& router) {
+        return std::shared_ptr<ServerTrans>(new ServerTrans(io_context, router));
     }
     // Start a server with ip and port.
     void start_server(const net::ip::address& address, unsigned short port);
@@ -34,7 +37,7 @@ public:
 
 private:
     // Private constructor for factory method
-    explicit ServerTrans(net::io_context& io_context);
+    explicit ServerTrans(net::io_context& io_context, Router& router);
     // Read individual client connections.
     void read_from_connection(std::shared_ptr<tcp::socket> socket,
                               std::shared_ptr<beast::flat_buffer> buffer,
@@ -49,6 +52,7 @@ private:
     // Member variables
     net::io_context& m_io_context;
     std::unique_ptr<tcp::acceptor> m_acceptor;
+    Router& m_router;
 };
 
 // Detailed client transmission class.

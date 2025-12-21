@@ -13,13 +13,23 @@ add_library(network_transmission SHARED
     network/transmission/transmission.cpp
 )
 
+add_library(network_router SHARED
+    network/router/router.cpp
+)
+
 # Configure library targets
 configure_library_target(node_dht)
 configure_library_target(network_transmission)
+configure_library_target(network_router)
 
 # Apply version information to library targets
 get_version_info(node_dht)
 get_version_info(network_transmission)
+get_version_info(network_router)
 
 # Configure network-specific dependencies
 configure_network_dependencies(network_transmission)
+configure_network_dependencies(network_router)
+
+# Link libraries
+target_link_libraries(network_transmission PRIVATE network_router)

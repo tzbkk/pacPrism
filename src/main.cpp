@@ -1,8 +1,11 @@
 #include <iostream>
+
 #include <boost/asio.hpp>
-#include "pacPrism/version.h"
-#include "network/transmission/transmission.h"
-#include "node/dht/dht_operation.h"
+
+#include <pacPrism/version.h>
+#include <network/transmission/transmission.h>
+#include <node/dht/dht_operation.h>
+#include <network/router/router.h>
 
 int main() {
     // Print banner and version info.
@@ -15,7 +18,12 @@ int main() {
 
     // Init DHT.
     std::cout << "Initing DHT..." << std::endl;
-    dht_operation dht;
+    DHT_operation dht;
+
+    // Init router.
+    std::cout << "Initing router..." << std::endl;
+    Router router;
+
 
     // Init server.
     std::cout << "Starting HTTP server..." << std::endl;
@@ -23,10 +31,10 @@ int main() {
         // Create IO context
         boost::asio::io_context io_context;
         // Create server instance
-        auto server = ServerTrans::create(io_context);
+        auto server = ServerTrans::create(io_context, router);
 
-        // Start server on localhost:8080
-        server->start_server(boost::asio::ip::make_address("0.0.0.0"), 8080);
+        // Start server on localhost:9001
+        server->start_server(boost::asio::ip::make_address("127.0.0.1"), 9001);
         // Run the IO context
         io_context.run();
     } catch (const std::exception& e) {

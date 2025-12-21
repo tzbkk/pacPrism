@@ -9,7 +9,7 @@
 #include <optional>
 
 // DHT operation class for managing distributed hash table entries
-class dht_operation {
+class DHT_operation {
 private:
     // Where entries are stored.
     std::unordered_map<std::string, dht_entry> stored_entries;
