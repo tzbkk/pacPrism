@@ -36,7 +36,7 @@ int main() {
         // Sing up exit process.
         boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
         signals.async_wait([&](auto, auto) {
-            std::cout << "\n\033Shutting down pacPrism...\033[0m" << std::endl;
+            std::cout << "Shutting down pacPrism..." << std::endl;
             io_context.stop();
         });
 
