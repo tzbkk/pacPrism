@@ -5,12 +5,13 @@
 ```
 pacPrism/
 ├── CMakeLists.txt              # 根 CMake 配置文件
+├── CMakePresets.json           # CMake Presets 配置 (推荐构建方式)
 ├── vcpkg.json                  # vcpkg 依赖管理文件
 ├── README.md                   # 英文项目说明文档
 ├── README_zh.md               # 中文项目说明文档
 ├── CLAUDE.md                   # Claude Code 项目指导文档
 │
-├── scripts/                    # 构建和配置脚本
+├── scripts/                    # 构建和配置脚本 (传统方式)
 │   ├── build.ps1              # Windows PowerShell 构建脚本
 │   └── build.sh               # Linux/macOS Bash 构建脚本
 │
@@ -18,7 +19,7 @@ pacPrism/
 │   ├── VersionConfig.cmake     # 版本管理配置
 │   ├── LibraryConfig.cmake     # 库目标配置
 │   ├── BuildConfig.cmake       # 构建系统配置
-│   └── version.h.in            # 版本头文件模板
+│   └── version.hpp.in          # 版本头文件模板
 │
 ├── src/                        # 主应用程序源代码
 │   ├── CMakeLists.txt          # 可执行文件配置
@@ -117,15 +118,33 @@ pacPrism/
 
 ### 5. 构建脚本 (`scripts/`)
 
-**build.ps1**: Windows PowerShell 脚本
+**build.ps1** / **build.sh**: 传统构建脚本 (Legacy)
 - Visual Studio Build Tools 检测
 - vcpkg 状态检查和初始化
 - 自动化构建流程
+- **注意**: 推荐使用 CMake Presets 代替
 
-**build.sh**: Linux/macOS Bash 脚本
-- 跨平台路径处理
-- vcpkg 环境设置
-- CMake 配置和构建
+### 6. CMake Presets (`CMakePresets.json`)
+
+**CMakePresets.json**: 推荐的构建配置方式
+- `debug` preset: Debug 构建配置
+- `release` preset: Release 构建配置
+- 自动 vcpkg toolchain 集成
+- 生成 compile_commands.json 用于 IDE 支持
+
+**使用方法**:
+```bash
+# 查看可用 presets
+cmake --list-presets
+
+# 配置并构建 (Debug)
+cmake --preset debug
+cmake --build --preset debug
+
+# 配置并构建 (Release)
+cmake --preset release
+cmake --build --preset release
+```
 
 ## 依赖关系
 
@@ -136,11 +155,18 @@ lib/network/transmission (network_transmission.dll)
     ↓
 lib/node/dht (node_dht.dll)
     ↓
-boost-beast (第三方依赖)
+boost-beast (第三方依赖，通过 vcpkg 安装)
 ```
 
 ## 构建流程
 
+### 推荐方式 (CMake Presets)
+1. **克隆仓库**: `git clone --recurse-submodules` (vcpkg 是 submodule)
+2. **配置预设**: `cmake --preset debug` 或 `cmake --preset release`
+3. **构建项目**: `cmake --build --preset debug`
+4. **版本注入**: Git 信息和构建时间戳自动注入
+
+### 传统方式 (构建脚本)
 1. **环境检测**: 检查 Visual Studio Build Tools (Windows) 或 C++ 编译器
 2. **vcpkg 初始化**: 自动下载和构建 boost-beast 依赖
 3. **CMake 配置**: 生成构建文件，配置 toolchain
@@ -151,10 +177,10 @@ boost-beast (第三方依赖)
 
 - **编程语言**: C++23
 - **网络库**: Boost.Beast 1.89.0 (包含 Boost.Asio)
-- **构建系统**: CMake 3.14+ + vcpkg
-- **包管理**: vcpkg (manifest 模式)
+- **构建系统**: CMake 3.19+ (Presets) + vcpkg
+- **包管理**: vcpkg (Git submodule + manifest 模式)
 - **版本控制**: Git (集成版本信息)
 
 ---
 
-*最后更新: 2025-12-07*
+*最后更新: 2025-12-22*

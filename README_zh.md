@@ -87,12 +87,32 @@ sources.list: http://pacprism.local:8080/debian
 
 ### 环境要求
 - **C++23 兼容编译器** (GCC 13+, Clang 14+, MSVC 19.36+)
-- **CMake 3.14+**
-- **Visual Studio Build Tools** (仅Windows)
+- **CMake 3.19+** (支持 Presets 功能)
+- **Visual Studio Build Tools** (仅Windows, MSVC 19.36+)
 
-### 构建与运行
+### 构建与运行（推荐）
 
-**Windows:**
+**使用 CMake Presets**（跨平台）：
+```bash
+# 克隆仓库（包含 vcpkg 子模块）
+git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
+cd pacPrism
+
+# 配置并构建（Debug）
+cmake --preset debug
+cmake --build --preset debug
+
+# 或配置并构建（Release）
+cmake --preset release
+cmake --build --preset release
+
+# 运行应用程序
+./build/bin/pacprism
+```
+
+### 构建与运行（传统方式）
+
+**Windows (PowerShell):**
 ```powershell
 git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
 cd pacPrism
@@ -100,7 +120,7 @@ cd pacPrism
 .\build\bin\pacprism.exe
 ```
 
-**Linux/macOS:**
+**Linux/macOS (Bash):**
 ```bash
 git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
 cd pacPrism

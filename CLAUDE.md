@@ -24,7 +24,28 @@ For detailed implementation status, see [docs/CURRENT_STATUS.md](docs/CURRENT_ST
 
 ## Development Commands
 
-### Building the Project
+### Building the Project (Recommended)
+
+**Using CMake Presets** (Cross-platform):
+```bash
+# List available presets
+cmake --list-presets
+
+# Configure with debug preset
+cmake --preset debug
+
+# Build with debug preset
+cmake --build --preset debug
+
+# Or configure and build with release preset
+cmake --preset release
+cmake --build --preset release
+
+# Run the application
+./build/bin/pacprism
+```
+
+### Building the Project (Legacy)
 
 **Windows (PowerShell):**
 ```powershell
@@ -42,7 +63,7 @@ chmod +x scripts/build.sh
 **Manual Build (Cross-platform):**
 ```bash
 # Configure the project (automatically handles dependencies)
-cmake -B build
+cmake -B build -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 
 # Build the entire project
 cmake --build build
@@ -57,12 +78,15 @@ cmake --build build --target clean
 
 ### Automatic Dependency Management
 
-The build system automatically handles dependency installation via vcpkg:
+The build system automatically handles dependency installation via vcpkg (submodule):
+- **vcpkg is a Git submodule** at `vcpkg/` directory
 - **Boost.Beast 1.89.0** library is automatically fetched and configured
 - Works seamlessly across Windows and Linux platforms
 - Maintains compatibility with existing dependency management approaches
 - No manual dependency installation required for new developers
 - **Windows Prerequisite**: Visual Studio Build Tools with C++ compiler must be installed
+
+**Note**: When cloning the repository, use `git clone --recurse-submodules` to ensure vcpkg is checked out.
 
 ### Running the Application
 
@@ -76,12 +100,13 @@ The build system automatically handles dependency installation via vcpkg:
 ```
 pacPrism/
 ├── CMakeLists.txt              # Root CMake configuration
+├── CMakePresets.json           # CMake Presets for simplified builds
 ├── vcpkg.json                  # vcpkg dependency management
 ├── README.md                   # English project documentation
 ├── README_zh.md               # Chinese project documentation
 ├── CLAUDE.md                   # Claude Code project guidance (this file)
 │
-├── scripts/                    # Build and configuration scripts
+├── scripts/                    # Build and configuration scripts (legacy)
 │   ├── build.ps1              # Windows PowerShell build script
 │   └── build.sh               # Linux/macOS Bash build script
 │
@@ -89,7 +114,7 @@ pacPrism/
 │   ├── VersionConfig.cmake     # Version management configuration
 │   ├── LibraryConfig.cmake     # Library target configuration
 │   ├── BuildConfig.cmake       # Build system configuration
-│   └── version.h.in            # Version header file template
+│   └── version.hpp.in          # Version header file template
 │
 ├── src/                        # Main application source code
 │   ├── CMakeLists.txt          # Executable configuration

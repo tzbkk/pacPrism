@@ -87,12 +87,32 @@ Request → Local Cache → P2P Nodes → Official Mirror
 
 ### Requirements
 - **C++23 compatible compiler** (GCC 13+, Clang 14+, MSVC 19.36+)
-- **CMake 3.14+**
-- **Visual Studio Build Tools** (Windows only)
+- **CMake 3.19+** (for Presets support)
+- **Visual Studio Build Tools** (Windows only, MSVC 19.36+)
 
-### Build & Run
+### Build & Run (Recommended)
 
-**Windows:**
+**Using CMake Presets** (Cross-platform):
+```bash
+# Clone repository with vcpkg submodule
+git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
+cd pacPrism
+
+# Configure and build (Debug)
+cmake --preset debug
+cmake --build --preset debug
+
+# Or configure and build (Release)
+cmake --preset release
+cmake --build --preset release
+
+# Run the application
+./build/bin/pacprism
+```
+
+### Build & Run (Legacy)
+
+**Windows (PowerShell):**
 ```powershell
 git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
 cd pacPrism
@@ -100,7 +120,7 @@ cd pacPrism
 .\build\bin\pacprism.exe
 ```
 
-**Linux/macOS:**
+**Linux/macOS (Bash):**
 ```bash
 git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
 cd pacPrism
