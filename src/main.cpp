@@ -24,17 +24,25 @@ int main() {
     std::cout << "Initing router..." << std::endl;
     Router router(dht);
 
-
     // Init server.
     std::cout << "Starting HTTP server..." << std::endl;
     try {
         // Create IO context
         boost::asio::io_context io_context;
+
         // Create server instance
         auto server = ServerTrans::create(io_context, router);
 
+        // Sing up exit process.
+        boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
+        signals.async_wait([&](auto, auto) {
+            std::cout << "\n\033Shutting down pacPrism...\033[0m" << std::endl;
+            io_context.stop();
+        });
+
         // Start server on localhost:9001
-        server->start_server(boost::asio::ip::make_address("127.0.0.1"), 9001);
+        server->start_server(boost::asio::ip::make_address("0.0.0.0"), 9001);
+
         // Run the IO context
         io_context.run();
     } catch (const std::exception& e) {

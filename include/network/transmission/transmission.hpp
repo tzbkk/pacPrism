@@ -32,12 +32,12 @@ public:
     }
     // Start a server with ip and port.
     void start_server(const net::ip::address& address, unsigned short port);
-    // Start accepting.
-    void start_accept();
 
 private:
     // Private constructor for factory method
     explicit ServerTrans(net::io_context& io_context, Router& router);
+    // On creating a server, start it.
+    void start_accept();
     // Read individual client connections.
     void read_from_connection(std::shared_ptr<tcp::socket> socket,
                               std::shared_ptr<beast::flat_buffer> buffer,
@@ -46,7 +46,7 @@ private:
     void response_builder(std::shared_ptr<tcp::socket> socket, const http::request<http::string_body>& request);
     // Send a response.
     void response_sender(std::shared_ptr<tcp::socket> socket,
-                         std::shared_ptr<http::response<http::string_body>> response);
+                         router_response response);
 
 private:
     // Member variables

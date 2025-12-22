@@ -5,17 +5,18 @@
 #include <node/dht/dht_operation.hpp>
 
 bool DHT_operation::verify_entry(std::string node_id) {
-    if (node_id_to_generation_timestamp_entries.contains(node_id)) {
-        return true;
-    }
+    if (node_id_to_generation_timestamp_entries.contains(node_id)) return true;
     return false;
 }
 
 void DHT_operation::store_entry(dht_entry entry) {
+    // Check if the entry exist. If recieved a new one or newer one, store it.
     if (verify_entry(entry.node_id)) {
         if (node_id_to_generation_timestamp_entries[entry.node_id] < entry.generation_timestamp) this->remove_entry(entry.node_id);
         else return;
     }
+
+    // Update all tables.
     node_ip_to_node_id_entries[entry.node_ip] = entry.node_id;
     node_id_to_node_ip_entries[entry.node_id] = entry.node_ip;
     node_id_to_generation_timestamp_entries[entry.node_id] = entry.generation_timestamp;
@@ -37,11 +38,16 @@ const std::set<std::string>* DHT_operation::query_node_ids_by_shard_id(std::stri
 }
 
 void DHT_operation::remove_entry(const std::string& node_id) {
+    // Make sure the entry to remove exists.
     if (verify_entry(node_id) == false) return;
+
+    // Make sure that a new node with IP that used by old node will not be removed.
     const std::string& node_ip = node_id_to_node_ip_entries[node_id];
     if (node_ip_to_node_id_entries[node_ip] == node_id) {
         node_ip_to_node_id_entries.erase(node_ip);
     }
+
+    // Update tables.
     node_id_to_node_ip_entries.erase(node_id);
     node_id_to_generation_timestamp_entries.erase(node_id);
     for (auto shard_id : node_id_to_shard_ids_entries[node_id]) {
@@ -59,6 +65,7 @@ void DHT_operation::clean_by_expiry_time() {
     auto now_sec = std::chrono::duration_cast<std::chrono::seconds>(
         std::chrono::system_clock::now().time_since_epoch()
     ).count();
+
     // Record entries to remove.
     std::vector<std::string> entries_to_remove;
     auto it = expiry_timestamp_to_node_id_entries.begin();
@@ -70,8 +77,13 @@ void DHT_operation::clean_by_expiry_time() {
             break;
         }
     }
+
     // Remove expired entries and pairs.
     for (auto node_id : entries_to_remove) {
         remove_entry(node_id);
     }
+}
+
+void DHT_operation::clean_by_liveness() {
+    // TODO.
 }

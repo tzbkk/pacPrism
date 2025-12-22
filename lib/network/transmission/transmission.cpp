@@ -2,6 +2,7 @@
 #include <sstream>
 #include <memory>
 #include <array>
+#include <variant>
 
 #include <boost/beast.hpp>
 #include <boost/asio.hpp>
@@ -30,15 +31,16 @@ void ServerTrans::start_server(const net::ip::address& address, unsigned short p
 }
 
 void ServerTrans::start_accept() {
-    auto socket = std::make_shared<tcp::socket>(m_io_context);
-    auto buffer = std::make_shared<beast::flat_buffer>();
-    auto req_parser = std::make_shared<http::request_parser<http::string_body>>();
-    // Use shared_from_this() to ensure object lifetime.
     auto self = shared_from_this();
+    auto socket = std::make_shared<tcp::socket>(m_io_context);
+
     // Accept a connection.
-    m_acceptor->async_accept(*socket, [self, socket, buffer, req_parser](const boost::system::error_code& error) {
+    m_acceptor->async_accept(*socket, [self](const boost::system::error_code& error) {
+        // Prepare varibles.
+        auto socket = std::make_shared<tcp::socket>(self->m_io_context);
+        auto buffer = std::make_shared<beast::flat_buffer>();
+        auto req_parser = std::make_shared<http::request_parser<http::string_body>>();
         if (!error) {
-            // std::cout << "New client connected: " << socket->remote_endpoint() << std::endl;
             self->read_from_connection(socket, buffer, req_parser);
             self->start_accept();
         } else {
@@ -53,8 +55,8 @@ void ServerTrans::read_from_connection(std::shared_ptr<tcp::socket> socket,
 
     auto self = shared_from_this();
 
-    // Set the parser body limit (optional)
-    req_parser->body_limit(1024 * 1024); // 1MB limit
+    // Set the parser body limit (1MB)
+    req_parser->body_limit(1024 * 1024);
 
     http::async_read(*socket, *buffer, *req_parser,
         [self, socket, buffer, req_parser](const boost::system::error_code& error, size_t bytes_transferred) {
@@ -63,9 +65,7 @@ void ServerTrans::read_from_connection(std::shared_ptr<tcp::socket> socket,
                 auto request = req_parser->release();
                 self->response_builder(socket, request);
             } else {
-                if (error == http::error::end_of_stream) {
-                    std::cout << "Read from " << socket->remote_endpoint() << " ended." << std::endl;
-                } else {
+                if (error != http::error::end_of_stream) {
                     std::cout << "Read from " << socket->remote_endpoint() << " failed, error: " << error.message() << std::endl;
                 }
                 socket->close();
@@ -78,26 +78,33 @@ void ServerTrans::response_builder(std::shared_ptr<tcp::socket> socket, const ht
     auto self = shared_from_this();
 
     // Route.
-    auto response = m_router.route_operation(request);
+    auto response = m_router.global_router(request);
 
     // Send the response.
     self->response_sender(socket, response);
 }
 
-void ServerTrans::response_sender(std::shared_ptr<tcp::socket> socket, std::shared_ptr<http::response<http::string_body>> response) {
+void ServerTrans::response_sender(std::shared_ptr<tcp::socket> socket, router_response response) {
     auto self = shared_from_this();
 
-    http::async_write(*socket, *response,
-        [self, socket, response](const boost::system::error_code& error, size_t bytes_transferred) {
-            if (!error) {
-                // std::cout << "Response sent successfully." << std::endl;
+    std::visit([self, socket](auto&& concrete_response) {
+            http::async_write(*socket, *concrete_response,
+        [self, socket, concrete_response](const boost::system::error_code& error, size_t bytes_transferred) {
+            if (error) return;
+
+            // Whether to keep alive.
+            if (concrete_response->keep_alive()) {
+                auto new_buffer = std::make_shared<beast::flat_buffer>();
+                auto new_parser = std::make_shared<http::request_parser<http::string_body>>();
+                self->read_from_connection(socket, new_buffer, new_parser);
             } else {
-                std::cout << "Failed to send response: " << error.message() << std::endl;
+                // Shutdown connection if there is no need to keep alive.
+                boost::system::error_code ec;
+                socket->shutdown(tcp::socket::shutdown_send, ec);
+                socket->close();
             }
-            // Graceful shutdown
-            boost::system::error_code ec;
-            socket->close();
         });
+    }, response);
 }
 
 // ClientTrans implementation
@@ -106,5 +113,4 @@ ClientTrans::ClientTrans(net::io_context& io_context)
 
 void ClientTrans::start_connecting() {
     // TODO: Implement client connection logic
-    std::cout << "Client connection started (not implemented yet)" << std::endl;
 }
