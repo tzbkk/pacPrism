@@ -6,75 +6,39 @@
 
 [中文版本](README_zh.md)
 
-## Core Value Proposition
+## Vision
 
-pacPrism is a **distributed caching layer for system packages** that enhances the performance and reliability of existing package managers through transparent proxy mode. It acts as a local interceptor, seamlessly integrating with tools like APT/Pacman without requiring any additional client software.
+pacPrism aims to be a **distributed caching layer for system packages** that enhances existing package managers through transparent proxy mode.
 
-### Technical Features
+### Target Architecture (Design Goals)
 
-1. **Package-Aware Transparent Proxy**
-   - Enable by simply modifying `sources.list`, completely transparent to package managers
-   - Zero-configuration startup, maintaining full compatibility with existing workflows
-   - Automatic identification of package types, dependencies, and version information
+1. **Transparent Proxy** - Modify `sources.list` to intercept APT/Pacman requests
+2. **Semantic Sharding** - Group related packages for locality and dependency completeness
+3. **Hybrid Distribution** - Central gateway + decentralized P2P data layer
+4. **Smart Routing** - Query DHT to find optimal nodes for content retrieval
 
-2. **Semantic Sharding Mechanism**
-   - Group related packages into logical units (Shards)
-   - Ensure dependency completeness and spatial locality
-   - Reduce network round trips for cross-node dependency resolution
+### Current Reality
 
-3. **Hybrid Distribution Architecture**
-   - **Centralized Access Layer (Gateway)**: Provides unified entry point, compatible with existing mirror protocols
-   - **Decentralized Data Layer (P2P)**: Nodes share package caches, reducing central server load
-   - Effectively mitigates node churn issues in P2P networks
-
-4. **Latency-Hidden Pipelining**
-   - Overlap computation and transmission processes
-   - Predictive prefetching of popular packages and their dependencies
-   - Parallel acquisition of multiple shards
-
-## Architecture Design
-
-### Core Components
-
-#### 1. HTTP Transparent Proxy Layer
-```
-sources.list: http://pacprism.local:8080/debian
-                ↓
-           pacPrism Gateway
-                ↓
-        [P2P Query] or [Official Source Fallback]
-```
-
-#### 2. Semantic Sharding System
-- **Shard ID**: `core-utils`, `web-server`, `development-tools`
-- **Package Mapping**: Organize logically related packages into the same shard
-- **Spatial Locality**: Packages in the same shard typically cached on the same node
-
-#### 3. DHT Index Layer
-- **Key**: `package_name` or `shard_id`
-- **Value**: `node_ip:port` list, sorted by node health
-- **Query Routing**: Intelligent selection of optimal nodes for content retrieval
-
-#### 4. Cache Fallback Mechanism
-```
-Request → Local Cache → P2P Nodes → Official Mirror
-       ← Hit        ← Miss     ← Final Fallback
-```
+**This is early-stage prototype code.** Most features above are design goals, not working implementations.
 
 ## Implementation Status
 
-### ✅ Completed
-- **HTTP Transparent Proxy Framework**: HTTP/1.1 server based on Boost.Beast
-- **DHT Memory Index**: Basic distributed hash table implementation (O(1) query performance)
-- **Cross-Platform Build System**: CMake + vcpkg automatic dependency management
+### ✅ Working (Tested & Verified)
+- **HTTP/1.1 Server** - Boost.Beast-based, starts on port 9001, returns basic responses
+- **DHT Memory Index** - In-memory hash-based storage, basic CRUD operations work
+- **Build System** - CMake Presets, cross-platform (Windows/Linux), vcpkg integration
 
-### 🔄 In Progress
-- **Package-Aware Routing Logic**: Intelligent distribution based on package names in HTTP headers
-- **Semantic Sharding Algorithm**: Dependency analysis and grouping strategy implementation
+### 🔄 Partial (Implemented but Incomplete)
+- **HTTP Request Router** - Architecture exists, most functions are stubs
+- **Custom Headers** - Can detect "Operation" header, no actual routing logic
+- **Response Builder** - Basic string responses, variant-based handling framework
 
-### 🔬 Research Phase
-- **P2P Content Distribution Protocol**: Node-to-node file transfer and cache synchronization mechanisms
-- **Cache Prefetching Strategy**: Intelligent prefetching algorithms based on usage patterns
+### 📋 Design (Code Not Written)
+- **P2P Protocol** - 0% implementation
+- **Real Distributed DHT** - Current DHT is single-process in-memory only
+- **Semantic Sharding** - Data structure defined, no algorithm
+- **Package-Aware Routing** - No actual APT request handling
+- **Cache Fallback** - No official source integration
 
 ## Technology Stack
 

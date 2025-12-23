@@ -1,6 +1,16 @@
 # DHT_operation Class Documentation
 
-The `DHT_operation` class provides a Node ID-based distributed hash table with 9-dimensional indexing for high-performance package management in the pacPrism system. This class implements a complete refactor from IP-based to Node ID-based architecture, supporting flexible node identification and multi-dimensional query patterns.
+> **Implementation Status**: Single-process in-memory prototype only. Not a true distributed system.
+
+The `DHT_operation` class provides a **single-process in-memory** hash-based index with multi-dimensional lookups. Despite the name "DHT", this is **not a distributed hash table** - it's a local data structure with O(1) lookup performance.
+
+## Current Reality
+
+- ✅ **Works**: In-memory CRUD operations
+- ✅ **Works**: Multi-dimensional indexing via multiple unordered_maps
+- ❌ **Not Distributed**: Single-process only, no network communication
+- ❌ **No Persistence**: Data lost on process restart
+- ❌ **No Replication**: No data copies across nodes
 
 ## Architecture Overview
 

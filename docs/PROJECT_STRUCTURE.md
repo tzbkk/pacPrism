@@ -1,5 +1,7 @@
 # pacPrism 项目架构
 
+> **Status**: Early prototype. Most components are incomplete or design-only.
+
 ## 项目目录结构
 
 ```
@@ -32,22 +34,22 @@ pacPrism/
 │   │   └── transmission/       # HTTP 传输层
 │   │       ├── CMakeLists.txt  # 传输库配置
 │   │       ├── transmission.cpp # HTTP 服务器实现
-│   │       └── transmission.h  # HTTP 传输接口
+│   │       └── transmission.hpp # HTTP 传输接口
 │   └── node/                   # 节点功能
 │       └── dht/                # 分布式哈希表
 │           ├── CMakeLists.txt  # DHT 库配置
 │           ├── dht_operation.cpp # DHT 核心操作
-│           ├── dht_operation.h  # DHT 操作接口
-│           └── dht_types.h      # DHT 数据结构
+│           ├── dht_operation.hpp # DHT 操作接口
+│           └── dht_types.hpp     # DHT 数据结构
 │
 ├── include/                    # 头文件
 │   ├── network/                # 网络相关头文件
 │   │   └── transmission/       # HTTP 传输头文件
-│   │       └── transmission.h  # HTTP 传输接口声明
+│   │       └── transmission.hpp # HTTP 传输接口声明
 │   └── node/                   # 节点相关头文件
 │       ├── dht/                # DHT 头文件
-│       │   ├── dht_operation.h  # DHT 操作接口声明
-│       │   └── dht_types.h      # DHT 数据结构定义
+│       │   ├── dht_operation.hpp # DHT 操作接口声明
+│       │   └── dht_types.hpp     # DHT 数据结构定义
 │       └── sharding/           # 分片相关
 │           └── sharding_types.h # 分片数据结构
 │
@@ -84,25 +86,38 @@ pacPrism/
 - 启动 HTTP 服务器
 - 版本信息显示
 
+**状态**: ✅ Working
+
 ### 2. 网络层 (`lib/network/`)
 
 **transmission.cpp**: HTTP 服务器实现
 - `ServerTrans` 类：HTTP 服务器核心
 - 异步 I/O 处理，支持并发连接
-- HTTP/1.1 协议支持，兼容 APT 客户端
+- HTTP/1.1 协议支持
 - 请求解析和响应生成
+
+**状态**: ✅ Working (basic responses), ❌ APT compatibility not implemented
+
+**router/**: HTTP 请求路由
+- Router 类架构存在
+- DHT 集成框架
+- 大部分函数是空壳
+
+**状态**: 🔄 Partial (architecture exists, no logic)
 
 ### 3. 分布式哈希表 (`lib/node/dht/`)
 
 **dht_operation.cpp**: DHT 核心操作
 - `store_entry()`: 存储节点条目，支持 TTL 管理
-- `query_entry()`: 按节点 IP 或分片查询条目
-- `remove_entry()`: 移除指定节点的条目
-- `clean_by_ttl()`: 清理过期的条目
+- `query_node_ids_by_shard_id()`: 按分片查询节点
+- `verify_entry()`: 节点存在性验证
+- `clean_by_expiry_time()`: 清理过期条目
 
-**dht_types.h**: 核心数据结构
-- `dht_entry`: 节点条目结构 (IP、分片信息、时间戳、TTL)
-- `sharding`: 分片信息结构 (ID、包列表)
+**dht_types.hpp**: 核心数据结构
+- `dht_entry`: 节点条目结构 (node_id, IP, 分片信息, 时间戳)
+- `shard`: 分片信息结构 (ID、包列表)
+
+**状态**: ✅ Working (in-memory only), ❌ Not distributed, ❌ No persistence
 
 ### 4. 构建系统 (`CMakeLists.txt`, `cmake/`)
 

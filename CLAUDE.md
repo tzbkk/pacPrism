@@ -227,11 +227,28 @@ pacPrism/
 
 ## Development Guidelines
 
-### Code Quality Standards
-- Use modern C++23 features (std::optional, smart pointers, RAII)
-- Ensure memory safety with proper async callback lifecycle management
-- Follow async I/O best practices with `shared_from_this()`
-- Use unordered_map for O(1) lookup performance where applicable
+### Project Philosophy: Pragmatic Path to Production
+
+**Goal**: Production-grade distributed package cache
+**Current State**: Prototype phase - functionality incomplete, untested for production load
+
+**Core Principles:**
+1. **Shipping > Design** - Working features beat elegant architecture
+2. **Test-Driven Honesty** - If it's not tested, it's not done
+3. **Production Standard** - Edge cases, errors, performance matter
+4. **No Buzzword Inflation** - "9-dimensional index" is implementation detail, not feature
+
+**Devlog Standards:**
+- What **actually works** today (tested with curl/integration tests)
+- What **broke** today (not just "refactored")
+- What's **blocking** production (honest assessment)
+- Progress % = **tested functionality** / **required functionality**
+- "Refactored" = changed working code, not "rewrote because first version was wrong"
+
+**Reality Check:**
+- HTTP server that returns "Hello" = 5% of production proxy
+- In-memory hash maps = 0% of distributed system
+- Design documents ≠ working system
 
 ### Current Implementation Priority (Updated 2025-12-21)
 1. **Complete Router Implementation** - Fix return statements and add missing functionality
