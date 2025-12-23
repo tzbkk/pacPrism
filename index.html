@@ -151,6 +151,29 @@
             overflow-x: auto;
         }
 
+        .status-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 4px;
+        }
+
+        .status-warning h3 {
+            color: #856404;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-warning p {
+            color: #856404;
+            margin: 0.5rem 0;
+        }
+
+        .status-warning ul {
+            color: #856404;
+            margin-left: 1.5rem;
+        }
+
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 2rem;
@@ -179,6 +202,20 @@
             <p class="subtitle">Revolutionary Hybrid Package Distribution</p>
             <p>pacPrism addresses the fundamental limitations of traditional "center-mirror" software distribution by combining <strong>access-layer centralization</strong> with <strong>data-layer decentralization</strong>, delivering enhanced reliability, reduced latency, and lower operational costs.</p>
         </section>
+
+        <div class="status-warning">
+            <h3>⚠️ Current Status: Early Prototype</h3>
+            <p><strong>This is early-stage prototype code.</strong> Most features described below are design goals, not working implementations.</p>
+            <p><strong>What actually works:</strong></p>
+            <ul>
+                <li>✅ HTTP/1.1 server (returns basic responses)</li>
+                <li>✅ In-memory DHT index (single-process hash table)</li>
+                <li>✅ Cross-platform build system</li>
+                <li>❌ Cannot handle real APT requests</li>
+                <li>❌ No true distributed functionality</li>
+                <li>❌ No node-to-node communication</li>
+            </ul>
+        </div>
 
         <section class="features">
             <div class="feature-card">

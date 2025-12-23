@@ -4,11 +4,23 @@
 
 > A semi-decentralized package distribution system for Debian GNU/Linux
 
+> **Current Status**: Early prototype code. Most features below are design goals, not working implementations.
+
 [中文版本](README_zh.md)
 
 ## Overview
 
-pacPrism is a revolutionary package distribution system that addresses the fundamental limitations of traditional "center-mirror" software distribution models. By combining **access-layer centralization** with **data-layer decentralization**, pacPrism delivers enhanced reliability, reduced latency, and lower operational costs while maintaining complete compatibility with existing Debian package management tools.
+pacPrism aims to be a revolutionary package distribution system addressing fundamental limitations of traditional "center-mirror" software distribution models. **The goal is combining access-layer centralization with data-layer decentralization** to deliver enhanced reliability, reduced latency, and lower operational costs.
+
+### Current Reality
+
+**This is early prototype phase.** What actually works:
+- ✅ HTTP/1.1 server (returns basic responses)
+- ✅ In-memory DHT index (single-process hash table)
+- ✅ Cross-platform build system
+- ❌ Cannot handle real APT requests
+- ❌ No true distributed functionality
+- ❌ No node-to-node communication
 
 ### Core Philosophy
 

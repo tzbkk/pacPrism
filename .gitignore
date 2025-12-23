@@ -1,3 +1,5 @@
 build/
 .claude/
 TODO.md
+vcpkg/
+vcpkg_installed/

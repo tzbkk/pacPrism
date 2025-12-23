@@ -139,6 +139,29 @@
             overflow-x: auto;
         }
 
+        .status-warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 4px;
+        }
+
+        .status-warning h3 {
+            color: #856404;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-warning p {
+            color: #856404;
+            margin: 0.5rem 0;
+        }
+
+        .status-warning ul {
+            color: #856404;
+            margin-left: 1.5rem;
+        }
+
         @media (max-width: 768px) {
             .hero h1 {
                 font-size: 2rem;
@@ -173,6 +196,20 @@
             <p class="subtitle">革命性的混合软件包分发</p>
             <p>pacPrism 通过结合<strong>访问层集中化</strong>与<strong>数据层去中心化</strong>，解决了传统"中心-镜像"软件分发的基本限制，提供增强的可靠性、降低的延迟和更低的运营成本。</p>
         </section>
+
+        <div class="status-warning">
+            <h3>⚠️ 当前状态：早期原型</h3>
+            <p><strong>这是早期原型代码。</strong> 以下描述的大部分特性是设计目标，非已实现功能。</p>
+            <p><strong>实际已实现功能：</strong></p>
+            <ul>
+                <li>✅ HTTP/1.1 服务器（能返回基本响应）</li>
+                <li>✅ 内存 DHT 索引（单进程哈希表）</li>
+                <li>✅ 跨平台构建系统</li>
+                <li>❌ 无法处理真实 APT 请求</li>
+                <li>❌ 没有真正的分布式功能</li>
+                <li>❌ 没有节点间通信</li>
+            </ul>
+        </div>
 
         <section class="features">
             <div class="feature-card">
