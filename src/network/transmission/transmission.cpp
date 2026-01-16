@@ -35,9 +35,8 @@ void ServerTrans::start_accept() {
     auto socket = std::make_shared<tcp::socket>(m_io_context);
 
     // Accept a connection.
-    m_acceptor->async_accept(*socket, [self](const boost::system::error_code& error) {
+    m_acceptor->async_accept(*socket, [self, socket](const boost::system::error_code& error) {
         // Prepare varibles.
-        auto socket = std::make_shared<tcp::socket>(self->m_io_context);
         auto buffer = std::make_shared<beast::flat_buffer>();
         auto req_parser = std::make_shared<http::request_parser<http::string_body>>();
         if (!error) {

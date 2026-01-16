@@ -1,6 +1,13 @@
 # pacPrism root CMake configuration
 
 cmake_minimum_required(VERSION 3.14)
+
+# Policy must be set BEFORE project() call
+# CMP0167: Use Boost Config module instead of FindBoost
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
+endif()
+
 project(pacPrism VERSION 0.1.0 LANGUAGES CXX)
 
 # Include configuration scripts
@@ -11,7 +18,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find dependency
-cmake_policy(SET CMP0167 NEW)
 find_package(Boost REQUIRED)
 
 # Version configuration
@@ -24,5 +30,4 @@ include(PlatformConfig)
 include(BuildConfig)
 
 # Subdirectories
-add_subdirectory(lib)
 add_subdirectory(src)

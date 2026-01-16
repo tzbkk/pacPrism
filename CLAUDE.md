@@ -2,25 +2,41 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Developer Context
+
+**Developer**: Freshman student at NWPU (Northwestern Polytechnical University)
+**Project Nature**: Learning project + practical utility tool
+**Development Pace**: Part-time development, no hard deadlines
+
+**My Role**: Assistant. I share 50% responsibility if this project fails.
+
 ## Project Overview
 
-pacPrism is a **distributed caching layer for system packages** that enhances existing package managers through transparent proxy mode. It acts as a high-performance package-aware interceptor that seamlessly integrates with APT/Pacman tools.
+pacPrism is a **distributed caching layer for system packages** that enhances existing package managers (APT/Pacman) through transparent proxy mode. The core goal is to make software package downloads faster and more bandwidth-efficient within campus networks.
 
-### Core Technical Value Proposition
+### Target Architecture (Not Yet Implemented)
 
-1. **Package-Aware Transparent Proxy**: Zero-configuration startup by modifying `sources.list`
-2. **Semantic Sharding Mechanism**: Groups related packages for dependency completeness and spatial locality
-3. **Hybrid Distribution Architecture**: Centralized access layer + decentralized P2P data layer
-4. **Latency-Hidden Pipelining**: Overlapped computation and transmission with predictive prefetching
+1. **Transparent Proxy** - Modify `sources.list` to intercept APT requests
+2. **Semantic Sharding** - Group related packages for dependency completeness and spatial locality
+3. **Hybrid Distribution** - Central gateway + decentralized P2P data layer
+4. **Smart Routing** - Query DHT to find optimal nodes for content retrieval
 
-### Current Implementation Status
+### Current Reality
 
-- **HTTP Transparent Proxy**: 85% complete - Boost.Beast HTTP/1.1 server with custom "Operation" header support
-- **DHT Memory Index**: 90% complete - O(1) lookup performance with unordered_map optimization
-- **P2P Communication Protocol**: 0% complete - Research phase
-- **Semantic Sharding**: Algorithm design phase
+**This is early-stage prototype code.** Most features above are design goals, not working implementations.
 
-For detailed implementation status, see [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md).
+**What Works**:
+- HTTP/1.1 server (Boost.Beast, port 9001, returns basic responses)
+- DHT in-memory index (single-process hash table, basic CRUD operations)
+- Build system (CMake Presets, cross-platform)
+
+**What's Incomplete**:
+- HTTP Router architecture exists but most functions are stubs
+- Cannot handle real APT requests
+- No true distributed functionality (single-process in-memory only)
+- No file caching, P2P communication, or package-aware routing
+
+For detailed status, see [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md).
 
 ## Development Commands
 
@@ -49,51 +65,25 @@ cmake --build --preset release
 
 **Windows (PowerShell):**
 ```powershell
-# Run the automated build script
 .\scripts\build.ps1
+.\build\bin\pacprism.exe
 ```
 
 **Linux/macOS (Bash):**
 ```bash
-# Run the automated build script
 chmod +x scripts/build.sh
 ./scripts/build.sh
-```
-
-**Manual Build (Cross-platform):**
-```bash
-# Configure the project (automatically handles dependencies)
-cmake -B build -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
-
-# Build the entire project
-cmake --build build
-
-# Build specific targets
-cmake --build build --target pacprism
-cmake --build build --target node_dht
-
-# Clean build
-cmake --build build --target clean
+./build/bin/pacprism
 ```
 
 ### Automatic Dependency Management
 
 The build system automatically handles dependency installation via vcpkg (submodule):
-- **vcpkg is a Git submodule** at `vcpkg/` directory
-- **Boost.Beast 1.89.0** library is automatically fetched and configured
-- Works seamlessly across Windows and Linux platforms
-- Maintains compatibility with existing dependency management approaches
-- No manual dependency installation required for new developers
-- **Windows Prerequisite**: Visual Studio Build Tools with C++ compiler must be installed
+- **Boost.Beast 1.89.0** - HTTP/1.1 asynchronous server (includes Boost.Asio)
+- Automatic download and installation, cross-platform compatible
+- When cloning, use: `git clone --recurse-submodules`
 
-**Note**: When cloning the repository, use `git clone --recurse-submodules` to ensure vcpkg is checked out.
-
-### Running the Application
-
-```bash
-# Run pacPrism
-./build/bin/pacprism
-```
+**Windows Prerequisite**: Install Visual Studio Build Tools with C++ compiler first
 
 ## Codebase Structure
 
@@ -104,11 +94,7 @@ pacPrism/
 ├── vcpkg.json                  # vcpkg dependency management
 ├── README.md                   # English project documentation
 ├── README_zh.md               # Chinese project documentation
-├── CLAUDE.md                   # Claude Code project guidance (this file)
-│
-├── scripts/                    # Build and configuration scripts (legacy)
-│   ├── build.ps1              # Windows PowerShell build script
-│   └── build.sh               # Linux/macOS Bash build script
+├── CLAUDE.md                   # This file
 │
 ├── cmake/                      # CMake configuration modules
 │   ├── VersionConfig.cmake     # Version management configuration
@@ -121,27 +107,22 @@ pacPrism/
 │   └── main.cpp                # Application entry point
 │
 ├── lib/                        # Library components
-│   ├── CMakeLists.txt          # Library configuration
-│   ├── network/                # Network layer implementation
-│   │   ├── CMakeLists.txt      # Network library configuration
+│   ├── network/
 │   │   ├── transmission/       # HTTP transport layer
-│   │   │   ├── CMakeLists.txt  # Transport library configuration
 │   │   │   ├── transmission.cpp # HTTP server implementation
 │   │   │   └── transmission.hpp # HTTP transport interface
 │   │   └── router/             # HTTP request routing layer
-│   │       ├── CMakeLists.txt  # Router library configuration
 │   │       ├── router.cpp      # HTTP router implementation
 │   │       └── router.hpp      # HTTP router interface
 │   └── node/                   # Node functionality
 │       └── dht/                # Distributed hash table
-│           ├── CMakeLists.txt  # DHT library configuration
-│           ├── dht_operation.cpp # DHT core operations (9-dimension index system)
-│           ├── dht_operation.hpp # DHT operation interface (Node ID-based architecture)
-│           └── dht_types.hpp     # DHT data structures (modern C++23 design)
+│           ├── dht_operation.cpp # DHT core operations
+│           ├── dht_operation.hpp # DHT operation interface
+│           └── dht_types.hpp     # DHT data structures
 │
 ├── include/                    # Header files (.hpp for C++ language detection)
 │   ├── network/                # Network related headers
-│   │   ├── transmission/       # HTTP transport headers
+│   │   ├── transmission/
 │   │   │   └── transmission.hpp # HTTP transport interface declaration
 │   │   └── router/             # HTTP router headers
 │   │       └── router.hpp      # HTTP router interface declaration
@@ -155,6 +136,7 @@ pacPrism/
 ├── docs/                       # Project documentation
 │   ├── PROJECT_STRUCTURE.md    # Project architecture documentation
 │   ├── CURRENT_STATUS.md       # Current development status
+│   ├── ROADMAP.md              # Development roadmap
 │   └── dht_operation.md        # DHT operation documentation
 │
 └── devlog_zh/                  # Chinese development logs
@@ -263,6 +245,69 @@ pacPrism/
 - DHT operations verification through unit tests
 - Cross-platform build validation on Windows and Linux
 
+## Learning Roadmap
+
+### Knowledge Areas for Current Project Phase
+
+#### 1. HTTP Protocol Basics (Current Need)
+**Why it's needed**: Router needs to parse real APT requests
+**What to learn**:
+- HTTP request/response format
+- HTTP header fields
+- HTTP status codes
+- How APT uses HTTP (Range requests, conditional requests)
+- **Resources**: MDN Web Docs - HTTP, RFC 7231
+
+#### 2. JSON Serialization (Immediate Need)
+**Why it's needed**: DHT HTTP API needs structured data exchange
+**What to learn**:
+- JSON format basics
+- C++ JSON libraries (nlohmann/json or similar)
+- Serialization/deserialization
+- **Resources**: nlohmann/json GitHub README, JSON RFC 8259
+
+#### 3. File I/O and Caching (Medium-term Need)
+**Why it's needed**: Need to persist package files to disk
+**What to learn**:
+- C++ file streams (fstream)
+- Filesystem operations (std::filesystem)
+- LRU cache algorithms
+- Memory-mapped files (mmap)
+- **Resources**: cppreference filesystem
+
+#### 4. Advanced Network Programming (Medium-term Need)
+**Why it's needed**: P2P communication
+**What to learn**:
+- TCP/UDP socket programming
+- Async I/O models (already have basics through Boost.Asio)
+- Network byte order
+- **Resources**: Boost.Asio documentation, Beej's Guide to Network Programming
+
+#### 5. Distributed Systems Concepts (Long-term Need)
+**Why it's needed**: True distributed DHT
+**What to learn**:
+- Consistent hashing
+- Kademlia DHT protocol
+- Gossip protocol
+- CAP theorem
+- **Resources**: DDIA ("Designing Data-Intensive Applications")
+
+#### 6. Security Basics (Long-term Need)
+**Why it's needed**: Public deployment needs security mechanisms
+**What to learn**:
+- TLS/HTTPS basics
+- GPG signature verification
+- Basic authentication and authorization
+- **Resources**: Let's Encrypt cryptography primers
+
+### Learning Strategy Advice
+
+**Freshman has limited time**, don't try to learn everything at once:
+1. **Current phase**: Only learn HTTP protocol basics (just enough to get by)
+2. **When problems arise**: Look up specific knowledge points as needed
+3. **Practice first**: Learn while doing, don't do pure theory study
+4. **Take notes**: Write key learnings into devlog
+
 ## Core Implementation Files
 
 ### Main Application (`src/main.cpp`)
@@ -323,3 +368,14 @@ Router class accepts DHT_operation reference, enabling:
 - Clean separation of concerns
 
 This architecture provides a solid foundation for distributed package management with high performance, scalability, and maintainability.
+
+## Git Commit Strategy
+
+**Current Strategy**: Don't commit until achieving the next major breakthrough
+
+This means the working directory will stay "dirty" - this is normal. Priorities are:
+1. Implement working features
+2. Test and verify
+3. Then consider committing
+
+Don't stress about uncommitted changes in the working directory. This is a freshman learning project - there's no need to maintain a perfect Git history.

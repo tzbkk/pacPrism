@@ -6,6 +6,7 @@
 #include <boost/beast.hpp>
 
 #include <node/dht/dht_operation.hpp>
+#include <node/validator/validator.hpp>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -18,14 +19,11 @@ using router_response = std::variant<
 
 class Router {
 public:
-    Router(DHT_operation& dht);
+    Router(DHT_operation& dht, Validator& validator);
     // Route request by operation.
     router_response global_router(const http::request<http::string_body>& request);
 
 private:
-    // Verify the node identity.
-    bool verify_node_identity(const std::string& node_id, const std::string& node_signature, const std::string& body);
-    
     // Process requests from non node cilents.
     router_response plain_response_router(const http::request<http::string_body>& request);
 
@@ -37,4 +35,5 @@ private:
 
 private:
     DHT_operation& m_dht;
+    Validator& m_validator;
 };

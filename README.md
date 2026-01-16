@@ -95,6 +95,7 @@ chmod +x scripts/build.sh
 
 ## Documentation
 
+- [🗺️ Development Roadmap](docs/ROADMAP.md) - Three-phase evolution strategy: from campus to public P2P
 - [📋 Current Development Status](docs/CURRENT_STATUS.md) - Detailed implementation progress and feature verification
 - [🏗️ Project Architecture](docs/PROJECT_STRUCTURE.md) - Complete architecture design documentation
 - [📝 Development Log](devlog_zh/README_DEVLOG.md) - Daily development records

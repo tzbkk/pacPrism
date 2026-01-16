@@ -1,14 +1,67 @@
-# pacPrism main application CMake configuration
+# pacPrism library components CMake configuration
 
 # Include configuration scripts
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake")
 include(LibraryConfig)
+
+# Library definitions
+add_library(node_dht SHARED
+    node/dht/dht_operation.cpp
+)
+
+add_library(node_validator SHARED
+    node/validator/validator.cpp
+)
+
+add_library(console_parser SHARED
+    console/parser/parser.cpp
+)
+
+add_library(console_banner SHARED
+    console/banner/banner.cpp
+)
+
+add_library(network_transmission SHARED
+    network/transmission/transmission.cpp
+)
+
+add_library(network_router SHARED
+    network/router/router.cpp
+)
+
+# Configure library targets
+configure_library_target(node_dht)
+configure_library_target(node_validator)
+configure_library_target(console_parser)
+configure_library_target(console_banner)
+configure_library_target(network_transmission)
+configure_library_target(network_router)
+
+# Apply version information to library targets
+get_version_info(node_dht)
+get_version_info(node_validator)
+get_version_info(console_parser)
+get_version_info(console_banner)
+get_version_info(network_transmission)
+get_version_info(network_router)
+
+# Configure network-specific dependencies
+configure_network_dependencies(node_validator)
+configure_network_dependencies(network_transmission)
+configure_network_dependencies(network_router)
+
+# Link libraries
+target_link_libraries(network_router PRIVATE node_validator)
+target_link_libraries(network_transmission PRIVATE network_router)
 
 # Main executable
 add_executable(pacprism main.cpp)
 
 # Link libraries
 target_link_libraries(pacprism PRIVATE node_dht)
+target_link_libraries(pacprism PRIVATE node_validator)
+target_link_libraries(pacprism PRIVATE console_parser)
+target_link_libraries(pacprism PRIVATE console_banner)
 target_link_libraries(pacprism PRIVATE network_transmission)
 target_link_libraries(pacprism PRIVATE network_router)
 

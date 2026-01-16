@@ -95,6 +95,7 @@ chmod +x scripts/build.sh
 
 ## 文档
 
+- [🗺️ 发展路线图](docs/ROADMAP.md) - 三阶段演进策略：从校园网到公网 P2P
 - [📋 当前开发状态](docs/CURRENT_STATUS.md) - 详细实现进度和功能验证
 - [🏗️ 项目架构](docs/PROJECT_STRUCTURE.md) - 完整架构设计说明
 - [📝 开发日志](devlog_zh/README_DEVLOG.md) - 每日开发记录

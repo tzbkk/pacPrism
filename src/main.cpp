@@ -2,27 +2,35 @@
 
 #include <boost/asio.hpp>
 
-#include <pacPrism/version.h>
+#include <console/banner/banner.hpp>
+#include <console/parser/parser.hpp>
 #include <network/transmission/transmission.hpp>
 #include <node/dht/dht_operation.hpp>
+#include <node/validator/validator.hpp>
 #include <network/router/router.hpp>
 
-int main() {
-    // Print banner and version info.
-    std::cout << "\033[32mpacPrism - Semi-decentralized Package Distribution System\033[0m" << std::endl;
-    std::cout << "Version \033[34m" << pacprism::getVersionFull() << "\033[0m" << std::endl;
-    std::cout << "Build \033[33m" << pacprism::getBuildInfo() << "\033[0m" << std::endl;
-    if (pacprism::getGitInfo() != "no git info") {
-        std::cout << "Git: \033[35m" << pacprism::getGitInfo() << "\033[0m" << std::endl;
+int main(int argc, char* argv[]) {
+    // Parse command line arguments
+    Parser parser;
+    if (!parser.parse(argc, argv)) {
+        return 1;
     }
+
+    // Print banner and version info.
+    Banner banner;
+    banner.print();
 
     // Init DHT.
     std::cout << "Initing DHT..." << std::endl;
     DHT_operation dht;
 
+    // Init validator.
+    std::cout << "Initing validator..." << std::endl;
+    Validator validator;
+
     // Init router.
     std::cout << "Initing router..." << std::endl;
-    Router router(dht);
+    Router router(dht, validator);
 
     // Init server.
     std::cout << "Starting HTTP server..." << std::endl;
@@ -40,8 +48,8 @@ int main() {
             io_context.stop();
         });
 
-        // Start server on localhost:9001
-        server->start_server(boost::asio::ip::make_address("0.0.0.0"), 9001);
+        // Start server on 0.0.0.0 with specified port
+        server->start_server(boost::asio::ip::make_address("0.0.0.0"), parser.get_port());
 
         // Run the IO context
         io_context.run();
