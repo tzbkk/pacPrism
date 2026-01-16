@@ -53,14 +53,39 @@ pacPrism aims to be a **distributed caching layer for system packages** that enh
 - **C++23 compatible compiler** (GCC 13+, Clang 14+, MSVC 19.36+)
 - **CMake 3.19+** (for Presets support)
 - **Visual Studio Build Tools** (Windows only, MSVC 19.36+)
+- **vcpkg** package manager (local installation required)
+
+### Setting up vcpkg
+
+**First-time vcpkg setup** (if you don't have vcpkg installed):
+```bash
+# Clone vcpkg to a location of your choice (NOT inside this project)
+git clone https://github.com/Microsoft/vcpkg.git C:/vcpkg  # or ~/vcpkg on Linux/macOS
+cd C:/vcpkg  # or cd ~/vcpkg
+.\bootstrap-vcpkg.bat  # on Windows
+# ./bootstrap-vcpkg.sh  # on Linux/macOS
+
+# Set VCPKG_ROOT environment variable
+# Windows (PowerShell):
+$env:VCPKG_ROOT="C:/vcpkg"
+# To make it permanent, add to System Environment Variables
+
+# Linux/macOS (bash/zsh):
+export VCPKG_ROOT=~/vcpkg
+# Add to ~/.bashrc or ~/.zshrc for persistence
+```
 
 ### Build & Run (Recommended)
 
 **Using CMake Presets** (Cross-platform):
 ```bash
-# Clone repository with vcpkg submodule
-git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
+# Clone repository (no --recurse-submodules needed)
+git clone https://github.com/tzbkk/pacPrism.git
 cd pacPrism
+
+# Make sure VCPKG_ROOT environment variable is set
+# Windows PowerShell: echo $env:VCPKG_ROOT
+# Linux/macOS: echo $VCPKG_ROOT
 
 # Configure and build (Debug)
 cmake --preset debug
@@ -78,7 +103,10 @@ cmake --build --preset release
 
 **Windows (PowerShell):**
 ```powershell
-git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
+# Make sure VCPKG_ROOT is set first
+$env:VCPKG_ROOT="C:/vcpkg"  # Adjust path to your vcpkg location
+
+git clone https://github.com/tzbkk/pacPrism.git
 cd pacPrism
 .\scripts\build.ps1
 .\build\bin\pacprism.exe
@@ -86,7 +114,10 @@ cd pacPrism
 
 **Linux/macOS (Bash):**
 ```bash
-git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
+# Make sure VCPKG_ROOT is set first
+export VCPKG_ROOT=~/vcpkg  # Adjust path to your vcpkg location
+
+git clone https://github.com/tzbkk/pacPrism.git
 cd pacPrism
 chmod +x scripts/build.sh
 ./scripts/build.sh

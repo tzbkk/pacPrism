@@ -5,14 +5,21 @@ ABS_SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 PROJ_ROOT=$(cd "$ABS_SCRIPT_DIR/.." && pwd)
 
 # Check the integrity.
-if [[ -d "$PROJ_ROOT/vcpkg" ]]; then
-    VCPKG_ROOT=$(cd "$PROJ_ROOT/vcpkg" && pwd)
+if [[ -z "$VCPKG_ROOT" ]]; then
+    echo "VCPKG_ROOT environment variable not set. Please set it to your vcpkg installation path:" 1>&2
+    echo "export VCPKG_ROOT=~/vcpkg" 1>&2
+    echo "Add to ~/.bashrc or ~/.zshrc for persistence" 1>&2
+    exit 1
+fi
+
+if [[ -d "$VCPKG_ROOT" ]]; then
     echo "VCPKG_ROOT: $VCPKG_ROOT"
 else
-    echo "VCPKG_ROOT not found. Please clone the project with git submodules:" 1>&2
-    echo "git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git" 1>&2
-    echo "or if already cloned:" 1>&2
-    echo "git submodule update --init --recursive" 1>&2
+    echo "VCPKG_ROOT path does not exist: $VCPKG_ROOT" 1>&2
+    echo "Please install vcpkg first:" 1>&2
+    echo "git clone https://github.com/Microsoft/vcpkg.git ~/vcpkg" 1>&2
+    echo "cd ~/vcpkg" 1>&2
+    echo "./bootstrap-vcpkg.sh" 1>&2
     exit 1
 fi
 

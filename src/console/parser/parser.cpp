@@ -1,42 +1,46 @@
 #include <iostream>
-#include <string>
 #include <cstdlib>
+#include <cxxopts.hpp>
 
 #include <console/parser/parser.hpp>
 
-unsigned short Parser::parse_port(int argc, char* argv[]) const {
-    // Default port
-    if (argc < 2) {
-        return 9001;
-    }
-
-    // Parse port from argument
+bool Parser::parse(int argc, char* argv[]) {
     try {
-        int port = std::stoi(argv[1]);
+        cxxopts::Options options(argv[0], "pacPrism - Semi-decentralized Package Distribution System");
+
+        // Default values
+        unsigned short port = 9001;
+        std::string config_path = "build/config/pacprism.conf";
+
+        options.add_options()
+            ("h,help", "Print usage information")
+            ("c,config", "Path to configuration file", cxxopts::value<std::string>(config_path)->default_value("build/config/pacprism.conf"))
+            ("p,port", "Port number to listen on", cxxopts::value<unsigned short>(port)->default_value("9001"))
+        ;
+
+        // Parse options
+        auto result = options.parse(argc, argv);
+
+        // Show help if requested
+        if (result.count("help")) {
+            std::cout << options.help() << std::endl;
+            return false;
+        }
+
+        // Validate port range
         if (port < 1 || port > 65535) {
             std::cerr << "Error: Port must be between 1 and 65535" << std::endl;
-            print_usage(argv[0]);
-            return 0;
+            std::cout << options.help() << std::endl;
+            return false;
         }
-        return static_cast<unsigned short>(port);
-    } catch (const std::exception& e) {
-        std::cerr << "Error: Invalid port number '" << argv[1] << "'" << std::endl;
-        print_usage(argv[0]);
-        return 0;
-    }
-}
 
-void Parser::print_usage(const char* program_name) const {
-    std::cout << "Usage: " << program_name << " [port]\n"
-              << "  port    Optional. Port number to listen on (default: 9001)\n"
-              << std::endl;
-}
+        // Set parsed values
+        m_port = port;
+        m_config_path = config_path;
 
-bool Parser::parse(int argc, char* argv[]) {
-    unsigned short port = parse_port(argc, argv);
-    if (port == 0) {
+        return true;
+    } catch (const cxxopts::exceptions::exception& e) {
+        std::cerr << "Error parsing arguments: " << e.what() << std::endl;
         return false;
     }
-    m_port = port;
-    return true;
 }

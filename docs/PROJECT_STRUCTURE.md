@@ -23,39 +23,61 @@ pacPrism/
 │   ├── BuildConfig.cmake       # 构建系统配置
 │   └── version.hpp.in          # 版本头文件模板
 │
+├── cxxopts/                    # 命令行参数解析库 (header-only)
+│   ├── include/cxxopts.hpp     # 单头文件库
+│   ├── CMakeLists.txt          # cxxopts 自身的构建文件
+│   └── README.md               # cxxopts 说明文档
+│
+├── config/                     # 配置文件
+│   └── pacprism.conf           # 主配置文件
+│
 ├── src/                        # 主应用程序源代码
 │   ├── CMakeLists.txt          # 可执行文件配置
-│   └── main.cpp                # 应用程序入口点
-│
-├── lib/                        # 库组件
-│   ├── CMakeLists.txt          # 库配置
+│   ├── main.cpp                # 应用程序入口点
+│   ├── console/                # 控制台层实现
+│   │   ├── banner/             # 启动横幅显示
+│   │   │   ├── banner.cpp
+│   │   │   └── banner.hpp
+│   │   ├── parser/             # 命令行参数解析
+│   │   │   ├── parser.cpp
+│   │   │   └── parser.hpp
+│   │   └── io/                 # 控制台 I/O
+│   │       ├── io.cpp
+│   │       └── io.hpp
 │   ├── network/                # 网络层实现
-│   │   ├── CMakeLists.txt      # 网络库配置
-│   │   └── transmission/       # HTTP 传输层
-│   │       ├── CMakeLists.txt  # 传输库配置
-│   │       ├── transmission.cpp # HTTP 服务器实现
-│   │       └── transmission.hpp # HTTP 传输接口
+│   │   ├── transmission/       # HTTP 传输层
+│   │   │   ├── transmission.cpp
+│   │   │   └── transmission.hpp
+│   │   └── router/             # HTTP 请求路由层
+│   │       ├── router.cpp
+│   │       └── router.hpp
 │   └── node/                   # 节点功能
-│       └── dht/                # 分布式哈希表
-│           ├── CMakeLists.txt  # DHT 库配置
-│           ├── dht_operation.cpp # DHT 核心操作
-│           ├── dht_operation.hpp # DHT 操作接口
-│           └── dht_types.hpp     # DHT 数据结构
+│       ├── dht/                # 分布式哈希表
+│       │   ├── dht_operation.cpp
+│       │   ├── dht_operation.hpp
+│       │   └── dht_types.hpp
+│       └── validator/          # 请求验证器
+│           ├── validator.cpp
+│           └── validator.hpp
 │
 ├── include/                    # 头文件
+│   ├── console/                # 控制台相关头文件
+│   │   ├── banner/banner.hpp
+│   │   ├── parser/parser.hpp
+│   │   └── io/io.hpp
 │   ├── network/                # 网络相关头文件
-│   │   └── transmission/       # HTTP 传输头文件
-│   │       └── transmission.hpp # HTTP 传输接口声明
+│   │   ├── transmission/transmission.hpp
+│   │   └── router/router.hpp
 │   └── node/                   # 节点相关头文件
-│       ├── dht/                # DHT 头文件
-│       │   ├── dht_operation.hpp # DHT 操作接口声明
-│       │   └── dht_types.hpp     # DHT 数据结构定义
-│       └── sharding/           # 分片相关
-│           └── sharding_types.h # 分片数据结构
+│       ├── dht/dht_operation.hpp
+│       ├── dht/dht_types.hpp
+│       ├── validator/validator.hpp
+│       └── sharding/sharding_types.h
 │
 ├── docs/                       # 项目文档
 │   ├── PROJECT_STRUCTURE.md    # 项目架构说明 (本文件)
 │   ├── CURRENT_STATUS.md       # 当前开发状态
+│   ├── ROADMAP.md              # 发展路线图
 │   ├── dht_operation.md        # DHT 操作文档
 │   └── VERSION_SYSTEM.md       # 版本管理系统文档
 │
@@ -65,16 +87,19 @@ pacPrism/
 │
 ├── build/                      # 构建输出目录 (自动生成)
 │   ├── bin/                    # 可执行文件和库
-│   │   ├── pacprism            # 主可执行文件
-│   │   ├── libnetwork_transmission.dll # 网络库
-│   │   └── libnode_dht.dll     # DHT 库
+│   │   ├── pacprism.exe        # 主可执行文件 (Windows)
+│   │   ├── libconsole_banner.dll
+│   │   ├── libconsole_io.dll
+│   │   ├── libconsole_parser.dll
+│   │   ├── libnetwork_router.dll
+│   │   ├── libnetwork_transmission.dll
+│   │   ├── libnode_dht.dll
+│   │   └── libnode_validator.dll
+│   ├── config/                 # 配置文件输出
+│   │   └── pacprism.conf
 │   └── include/                # 生成的头文件
 │       └── pacPrism/
 │           └── version.h       # 自动生成的版本信息
-│
-└── vcpkg/                      # vcpkg 包管理器 (Git submodule)
-    ├── vcpkg.json             # vcpkg 依赖配置
-    └── ...                    # vcpkg 相关文件
 ```
 
 ## 核心组件说明
@@ -88,7 +113,41 @@ pacPrism/
 
 **状态**: ✅ Working
 
-### 2. 网络层 (`lib/network/`)
+### 1.1 控制台层 (`src/console/`)
+
+**banner.cpp**: 启动横幅显示
+- 彩色版本信息输出
+- 编译时间和 Git 信息显示
+- 跨平台 ANSI 颜色支持
+
+**状态**: ✅ Working
+
+**parser.cpp**: 命令行参数解析
+- 使用 cxxopts 库进行参数解析
+- 支持配置文件路径 (`--config`)
+- 支持端口配置 (`--port`)
+- 帮助信息显示 (`--help`)
+
+**状态**: ✅ Working
+
+**io.cpp**: 控制台 I/O 操作
+- 控制台输入输出管理
+- 日志级别控制
+- 错误信息格式化
+
+**状态**: ✅ Working
+
+**cxxopts 依赖**:
+- Header-only C++ library
+- 包含在项目的 `cxxopts/` 目录
+- 需要在 CMakeLists.txt 中添加 include 路径：
+  ```cmake
+  target_include_directories(console_parser PRIVATE
+      ${CMAKE_CURRENT_SOURCE_DIR}/../cxxopts/include
+  )
+  ```
+
+### 2. 网络层 (`src/network/`)
 
 **transmission.cpp**: HTTP 服务器实现
 - `ServerTrans` 类：HTTP 服务器核心
@@ -128,6 +187,7 @@ pacPrism/
 
 **vcpkg 集成**:
 - `vcpkg.json`: 项目依赖配置 (仅依赖 boost-beast)
+- 需要设置 VCPKG_ROOT 环境变量指向本地 vcpkg 安装
 - 自动依赖下载和安装
 - 跨平台兼容性
 
@@ -176,10 +236,17 @@ boost-beast (第三方依赖，通过 vcpkg 安装)
 ## 构建流程
 
 ### 推荐方式 (CMake Presets)
-1. **克隆仓库**: `git clone --recurse-submodules` (vcpkg 是 submodule)
-2. **配置预设**: `cmake --preset debug` 或 `cmake --preset release`
-3. **构建项目**: `cmake --build --preset debug`
-4. **版本注入**: Git 信息和构建时间戳自动注入
+1. **安装 vcpkg**:
+   ```bash
+   git clone https://github.com/Microsoft/vcpkg.git C:/vcpkg  # 或 ~/vcpkg
+   cd C:/vcpkg
+   .\bootstrap-vcpkg.bat  # Windows: bootstrap-vcpkg.sh on Linux/macOS
+   export VCPKG_ROOT=C:/vcpkg  # 设置环境变量
+   ```
+2. **克隆仓库**: `git clone https://github.com/tzbkk/pacPrism.git`
+3. **配置预设**: `cmake --preset debug` 或 `cmake --preset release`
+4. **构建项目**: `cmake --build --preset debug`
+5. **版本注入**: Git 信息和构建时间戳自动注入
 
 ### 传统方式 (构建脚本)
 1. **环境检测**: 检查 Visual Studio Build Tools (Windows) 或 C++ 编译器
@@ -193,9 +260,9 @@ boost-beast (第三方依赖，通过 vcpkg 安装)
 - **编程语言**: C++23
 - **网络库**: Boost.Beast 1.89.0 (包含 Boost.Asio)
 - **构建系统**: CMake 3.19+ (Presets) + vcpkg
-- **包管理**: vcpkg (Git submodule + manifest 模式)
+- **包管理**: vcpkg (本地安装 + VCPKG_ROOT 环境变量 + manifest 模式)
 - **版本控制**: Git (集成版本信息)
 
 ---
 
-*最后更新: 2025-12-22*
+*最后更新: 2026-01-17*

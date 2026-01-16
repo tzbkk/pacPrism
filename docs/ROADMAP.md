@@ -21,6 +21,68 @@
 - **官方源回退**：缓存未命中时转发到上游镜像（如清华源）
 - **监控面板**：缓存命中率、请求日志、可视化统计
 
+### 当前实现状态 (Updated 2026-01-17)
+
+**✅ 已完成**:
+- HTTP/1.1 服务器 (Boost.Beast, port 9001)
+- DHT 内存索引 (单进程哈希表)
+- 基础路由架构 (依赖注入模式)
+- 跨平台构建系统 (CMake Presets + vcpkg)
+
+**❌ 未完成 (关键阻塞)**:
+- **HTTP 307 重定向问题**: 当前返回 HTTP 307 重定向，APT 客户端不支持
+- **缺少真正的代理功能**: 需要实现上游请求获取和内容转发
+- **无文件缓存**: 没有本地持久化存储
+- **无 Range 请求支持**: 无法处理 APT 的断点续传
+
+**🔧 下一步实现**:
+
+1. **实现真正的 HTTP 代理** (优先级: P0)
+   ```cpp
+   // 当前实现 (错误):
+   return HTTP 307 Redirect to upstream
+
+   // 需要的实现 (正确):
+   1. 解析 APT 请求路径
+   2. 向上游发起 HTTP 请求 (Boost.Beast HTTP client)
+   3. 流式转发响应给客户端
+   4. 返回 HTTP 200 + 实际文件内容
+   ```
+
+2. **实现文件缓存系统** (优先级: P0)
+   ```cpp
+   - 缓存到本地磁盘: /var/cache/pacprism/debian/pool/...
+   - SHA256 校验和验证
+   - LRU 淘汰策略
+   - 缓存元数据管理
+   ```
+
+3. **支持 HTTP Range 请求** (优先级: P1)
+   ```cpp
+   - 解析 Range: bytes=0-1023
+   - 向上游转发 Range 请求
+   - 返回 206 Partial Content
+   - 支持 APT 断点续传
+   ```
+
+4. **支持条件请求** (优先级: P1)
+   ```cpp
+   - If-None-Match / If-Modified-Since
+   - 返回 304 Not Modified (节省带宽)
+   - ETag / Last-Headed 缓存验证
+   ```
+
+**测试验证**:
+```bash
+# 当前测试 (307 重定向):
+curl -v http://localhost:9001/debian/pool/main/v/vim/vim_9.0.0.deb
+# 返回: HTTP 307 → http://debian.org/... (APT 不支持)
+
+# 目标测试 (真实代理):
+curl -v http://localhost:9001/debian/pool/main/v/vim/vim_9.0.0.deb
+# 应该返回: HTTP 200 + 文件内容
+```
+
 ### 部署模式
 ```bash
 # 单台服务器（实验室/机房）
@@ -176,4 +238,4 @@ bool verify_tls_certificate(node);
 
 ---
 
-*最后更新: 2025-12-24*
+*最后更新: 2026-01-17*

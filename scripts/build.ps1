@@ -21,15 +21,23 @@ try {
 }
 
 # Check the integrity.
-$VCPKG_ROOT = Join-Path $PROJ_ROOT "vcpkg"
+if (-not $env:VCPKG_ROOT) {
+    Write-Host "VCPKG_ROOT environment variable not set. Please set it to your vcpkg installation path:" -ForegroundColor Red
+    Write-Host "`$env:VCPKG_ROOT='C:/vcpkg'" -ForegroundColor Red
+    Write-Host "To make it permanent, add to System Environment Variables" -ForegroundColor Red
+    exit 1
+}
+
+$VCPKG_ROOT = $env:VCPKG_ROOT
 if (Test-Path $VCPKG_ROOT) {
     $VCPKG_ROOT = Resolve-Path $VCPKG_ROOT
     Write-Host "VCPKG_ROOT: $VCPKG_ROOT"
 } else {
-    Write-Host "VCPKG_ROOT not found. Please clone the project with git submodules:" -ForegroundColor Red
-    Write-Host "git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git" -ForegroundColor Red
-    Write-Host "or if already cloned:" -ForegroundColor Red
-    Write-Host "git submodule update --init --recursive" -ForegroundColor Red
+    Write-Host "VCPKG_ROOT path does not exist: $VCPKG_ROOT" -ForegroundColor Red
+    Write-Host "Please install vcpkg first:" -ForegroundColor Red
+    Write-Host "git clone https://github.com/Microsoft/vcpkg.git C:/vcpkg" -ForegroundColor Red
+    Write-Host "cd C:/vcpkg" -ForegroundColor Red
+    Write-Host ".\bootstrap-vcpkg.bat" -ForegroundColor Red
     exit 1
 }
 

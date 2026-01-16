@@ -53,14 +53,39 @@ pacPrism 致力于成为**系统软件包的分布式缓存层**，通过透明�
 - **C++23 兼容编译器** (GCC 13+, Clang 14+, MSVC 19.36+)
 - **CMake 3.19+** (支持 Presets 功能)
 - **Visual Studio Build Tools** (仅Windows, MSVC 19.36+)
+- **vcpkg** 包管理器（需要本地安装）
+
+### 安装 vcpkg
+
+**首次安装 vcpkg**（如果尚未安装）：
+```bash
+# 将 vcpkg 克隆到您选择的目录（不要在这个项目内部）
+git clone https://github.com/Microsoft/vcpkg.git C:/vcpkg  # Linux/macOS 上使用 ~/vcpkg
+cd C:/vcpkg  # 或 cd ~/vcpkg
+.\bootstrap-vcpkg.bat  # Windows 上
+# ./bootstrap-vcpkg.sh  # Linux/macOS 上
+
+# 设置 VCPKG_ROOT 环境变量
+# Windows (PowerShell):
+$env:VCPKG_ROOT="C:/vcpkg"
+# 若要永久生效，添加到系统环境变量
+
+# Linux/macOS (bash/zsh):
+export VCPKG_ROOT=~/vcpkg
+# 添加到 ~/.bashrc 或 ~/.zshrc 以持久化
+```
 
 ### 构建与运行（推荐）
 
 **使用 CMake Presets**（跨平台）：
 ```bash
-# 克隆仓库（包含 vcpkg 子模块）
-git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
+# 克隆仓库（不需要 --recurse-submodules）
+git clone https://github.com/tzbkk/pacPrism.git
 cd pacPrism
+
+# 确保 VCPKG_ROOT 环境变量已设置
+# Windows PowerShell: echo $env:VCPKG_ROOT
+# Linux/macOS: echo $VCPKG_ROOT
 
 # 配置并构建（Debug）
 cmake --preset debug
@@ -78,7 +103,10 @@ cmake --build --preset release
 
 **Windows (PowerShell):**
 ```powershell
-git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
+# 首先确保设置了 VCPKG_ROOT
+$env:VCPKG_ROOT="C:/vcpkg"  # 调整为你的 vcpkg 位置
+
+git clone https://github.com/tzbkk/pacPrism.git
 cd pacPrism
 .\scripts\build.ps1
 .\build\bin\pacprism.exe
@@ -86,7 +114,10 @@ cd pacPrism
 
 **Linux/macOS (Bash):**
 ```bash
-git clone --recurse-submodules https://github.com/tzbkk/pacPrism.git
+# 首先确保设置了 VCPKG_ROOT
+export VCPKG_ROOT=~/vcpkg  # 调整为你的 vcpkg 位置
+
+git clone https://github.com/tzbkk/pacPrism.git
 cd pacPrism
 chmod +x scripts/build.sh
 ./scripts/build.sh

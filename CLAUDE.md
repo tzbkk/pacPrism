@@ -78,10 +78,22 @@ chmod +x scripts/build.sh
 
 ### Automatic Dependency Management
 
-The build system automatically handles dependency installation via vcpkg (submodule):
+The build system automatically handles dependency installation via vcpkg (local installation):
 - **Boost.Beast 1.89.0** - HTTP/1.1 asynchronous server (includes Boost.Asio)
-- Automatic download and installation, cross-platform compatible
-- When cloning, use: `git clone --recurse-submodules`
+- Requires VCPKG_ROOT environment variable to be set
+- vcpkg should be installed separately (not as a submodule)
+
+**Setting up vcpkg:**
+```bash
+# Install vcpkg to a location of your choice
+git clone https://github.com/Microsoft/vcpkg.git C:/vcpkg  # or ~/vcpkg
+cd C:/vcpkg
+.\bootstrap-vcpkg.bat  # Windows: bootstrap-vcpkg.sh on Linux/macOS
+
+# Set VCPKG_ROOT environment variable
+# Windows PowerShell: $env:VCPKG_ROOT="C:/vcpkg"
+# Linux/macOS: export VCPKG_ROOT=~/vcpkg
+```
 
 **Windows Prerequisite**: Install Visual Studio Build Tools with C++ compiler first
 
@@ -232,18 +244,91 @@ pacPrism/
 - In-memory hash maps = 0% of distributed system
 - Design documents ≠ working system
 
-### Current Implementation Priority (Updated 2025-12-21)
-1. **Complete Router Implementation** - Fix return statements and add missing functionality
-2. **DHT Operation HTTP APIs** - Implement complete HTTP interface for all DHT operations
-3. **Package-Aware Logic** - Intelligent distribution based on package names and shard analysis
-4. **JSON Request/Response Processing** - Support structured data exchange
-5. **Error Handling and Status Codes** - Comprehensive HTTP error management
+### Current Implementation Priority (Updated 2026-01-17)
+1. **Implement True Transparent Proxy** - Replace HTTP 307 redirects with actual proxy functionality
+2. **File Caching System** - Cache upstream responses to local filesystem
+3. **Complete Router Implementation** - Fix return statements and add missing functionality
+4. **DHT Operation HTTP APIs** - Implement complete HTTP interface for all DHT operations
+5. **Package-Aware Logic** - Intelligent distribution based on package names and shard analysis
+6. **JSON Request/Response Processing** - Support structured data exchange
+7. **Error Handling and Status Codes** - Comprehensive HTTP error management
+
+### HTTP Proxy Implementation Status
+
+**Current Behavior (NOT Production Ready)**:
+- Router returns **HTTP 307 Temporary Redirect** to upstream server
+- Example: `GET /debian/pool/main/...` → 307 → `http://debian.org/debian/pool/main/...`
+- This works for browsers with `-L` flag but **fails for APT clients**
+- APT does NOT follow redirects - it expects direct file content
+
+**Required Implementation**:
+```cpp
+// Current (BROKEN for APT):
+return redirect_builder("http://debian.org/" + path, version);
+
+// Needed (WORKING for APT):
+// 1. Make HTTP request to upstream
+// 2. Stream response back to client
+// 3. Cache to local disk for future requests
+return proxy_response_builder(upstream_request, version);
+```
+
+**What APT Expects**:
+```
+GET /debian/pool/main/v/vim/vim_9.0.0.deb HTTP/1.1
+Host: proxy.example.com:9001
+
+Response (HTTP 200):
+Content-Type: application/vnd.debian.binary-package
+Content-Length: 1234567
+[binary file data]
+```
+
+**What We Currently Return** (BROKEN):
+```
+HTTP/1.1 307 Temporary Redirect
+Location: http://debian.org/debian/pool/main/v/vim/vim_9.0.0.deb
+```
+
+**Implementation Plan**:
+1. **Phase 1**: HTTP client to fetch from upstream (Boost.Beast HTTP client)
+2. **Phase 2**: Stream response back to APT client
+3. **Phase 3**: Cache files to disk (std::filesystem, SHA256 verification)
+4. **Phase 4**: Serve from cache if available
+5. **Phase 5**: Handle Range requests and conditional requests (If-None-Match, If-Modified-Since)
 
 ### Testing and Verification
-- HTTP server functionality: `curl http://localhost:9001/`
-- Custom headers: `curl -H "Operation: store" http://localhost:9001/`
-- DHT operations verification through unit tests
-- Cross-platform build validation on Windows and Linux
+
+**Basic HTTP Server**:
+```bash
+curl http://localhost:9001/
+# Returns: "Hello from pacPrism!" + version info
+```
+
+**Custom Headers**:
+```bash
+curl -H "Operation: store" http://localhost:9001/
+# Returns: "Operation: store" + version info
+# (Does NOT actually store anything yet)
+```
+
+**Debian Package Path (Current - Redirect)**:
+```bash
+curl -v http://localhost:9001/debian/pool/main/g/gnome-extra-icons/gnome-extra-icons_1.1-5.dsc
+# Returns: HTTP 307 Redirect to http://debian.org/...
+# This DOES NOT work for APT clients!
+```
+
+**Debian Package Path (Needed - Proxy)**:
+```bash
+# After implementing true proxy:
+curl -v http://localhost:9001/debian/pool/main/v/vim/vim_9.0.0.deb
+# Should return: HTTP 200 with file content (NOT redirect!)
+```
+
+**Windows PowerShell Note**:
+- PowerShell's `curl` is `Invoke-WebRequest` alias
+- Use `curl.exe` for real curl or test from Git Bash/WSL
 
 ## Learning Roadmap
 
