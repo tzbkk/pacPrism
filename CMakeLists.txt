@@ -31,3 +31,10 @@ include(BuildConfig)
 
 # Subdirectories
 add_subdirectory(src)
+
+# Tests (optional, can be enabled with BUILD_TESTING=ON)
+option(BUILD_TESTING "Build test suite" OFF)
+if(BUILD_TESTING)
+    add_subdirectory(test)
+    message(STATUS "Test suite enabled")
+endif()

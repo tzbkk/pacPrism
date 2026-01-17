@@ -1,4 +1,3 @@
 build/
 .claude/
 TODO.md
-vcpkg_installed/cache/
