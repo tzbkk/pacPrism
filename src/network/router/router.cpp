@@ -1,12 +1,16 @@
 #include <memory>
 #include <format>
 #include <variant>
+#include <sstream>
 
 #include <node/dht/dht_operation.hpp>
 #include <node/validator/validator.hpp>
 #include <network/router/router.hpp>
 #include <console/io/io.hpp>
 #include <pacPrism/version.h>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 Router::Router(DHT_operation& dht, Validator& validator, FileCache& cache)
     : m_dht(dht), m_validator(validator), m_cache(cache) {};
@@ -29,8 +33,165 @@ router_response Router::global_router(const http::request<http::string_body>& re
 }
 
 router_response Router::node_response_router(const http::request<http::string_body>& request) {
-    // TODO.
-    return default_response_builder("Node response not implemented yet.", request.version(), http::status::ok);
+    // Parse the request target for API path
+    std::string target = std::string(request.target());
+    json response_json;
+    http::status status_code = http::status::ok;
+
+    try {
+        // API routes for DHT operations
+        // Format: /api/dht/{operation}
+
+        // Extract path components
+        if (target.find("/api/dht/") == 0) {
+            std::string path = target.substr(9); // Remove "/api/dht/"
+            std::string operation;
+            std::string params;
+
+            // Split operation and parameters
+            size_t query_pos = path.find('?');
+            if (query_pos != std::string::npos) {
+                operation = path.substr(0, query_pos);
+                params = path.substr(query_pos + 1);
+            } else {
+                // Check if this is a "clean/" operation (which contains a slash)
+                if (path.find("clean/") == 0) {
+                    operation = path; // Keep the whole path as operation
+                    params = "";
+                } else {
+                    size_t slash_pos = path.find('/');
+                    if (slash_pos != std::string::npos) {
+                        operation = path.substr(0, slash_pos);
+                        params = path.substr(slash_pos + 1);
+                    } else {
+                        operation = path;
+                    }
+                }
+            }
+
+            // Handle different DHT operations
+            if (operation == "verify" && !params.empty()) {
+                // GET /api/dht/verify/{node_id}
+                bool exists = m_dht.verify_entry(params);
+                response_json = {
+                    {"operation", "verify"},
+                    {"node_id", params},
+                    {"exists", exists}
+                };
+                status_code = http::status::ok;
+            }
+            else if (operation == "store" && request.method() == http::verb::post) {
+                // POST /api/dht/store
+                // Expected JSON body with dht_entry
+                try {
+                    json request_json = json::parse(request.body());
+                    dht_entry entry = request_json.get<dht_entry>();
+                    m_dht.store_entry(entry);
+                    response_json = {
+                        {"operation", "store"},
+                        {"status", "success"},
+                        {"node_id", entry.node_id}
+                    };
+                    status_code = http::status::created;
+                } catch (const json::exception& e) {
+                    response_json = {
+                        {"operation", "store"},
+                        {"status", "error"},
+                        {"message", "Invalid JSON body"}
+                    };
+                    status_code = http::status::bad_request;
+                }
+            }
+            else if (operation == "query") {
+                // GET /api/dht/query?shard_id={id}
+                // Parse shard_id from query parameters
+                std::string shard_id;
+                size_t shard_pos = params.find("shard_id=");
+                if (shard_pos != std::string::npos) {
+                    shard_pos += 9; // Skip "shard_id="
+                    size_t shard_end = params.find('&', shard_pos);
+                    if (shard_end == std::string::npos) {
+                        shard_id = params.substr(shard_pos);
+                    } else {
+                        shard_id = params.substr(shard_pos, shard_end - shard_pos);
+                    }
+                }
+
+                if (!shard_id.empty()) {
+                    const std::set<std::string>* node_ids = m_dht.query_node_ids_by_shard_id(shard_id);
+                    if (node_ids != nullptr) {
+                        response_json = {
+                            {"operation", "query"},
+                            {"shard_id", shard_id},
+                            {"node_ids", *node_ids}
+                        };
+                    } else {
+                        response_json = {
+                            {"operation", "query"},
+                            {"shard_id", shard_id},
+                            {"node_ids", std::set<std::string>()}
+                        };
+                    }
+                    status_code = http::status::ok;
+                } else {
+                    response_json = {
+                        {"operation", "query"},
+                        {"status", "error"},
+                        {"message", "Missing shard_id parameter"}
+                    };
+                    status_code = http::status::bad_request;
+                }
+            }
+            else if (operation == "clean/expiry" && request.method() == http::verb::post) {
+                // POST /api/dht/clean/expiry
+                m_dht.clean_by_expiry_time();
+                response_json = {
+                    {"operation", "clean/expiry"},
+                    {"status", "success"},
+                    {"message", "Expired entries cleaned"}
+                };
+                status_code = http::status::ok;
+            }
+            else if (operation == "clean/liveness" && request.method() == http::verb::post) {
+                // POST /api/dht/clean/liveness
+                m_dht.clean_by_liveness();
+                response_json = {
+                    {"operation", "clean/liveness"},
+                    {"status", "success"},
+                    {"message", "Unhealthy entries cleaned"}
+                };
+                status_code = http::status::ok;
+            }
+            else {
+                response_json = {
+                    {"status", "error"},
+                    {"message", "Unknown DHT operation"}
+                };
+                status_code = http::status::not_found;
+            }
+        } else {
+            response_json = {
+                {"status", "error"},
+                {"message", "Invalid API path"}
+            };
+            status_code = http::status::bad_request;
+        }
+    } catch (const std::exception& e) {
+        response_json = {
+            {"status", "error"},
+            {"message", e.what()}
+        };
+        status_code = http::status::internal_server_error;
+    }
+
+    // Build JSON response
+    auto response = std::make_shared<http::response<http::string_body>>(status_code, request.version());
+    response->set(http::field::content_type, "application/json");
+    response->set("server", std::format("pacPrism/{}", pacprism::getVersionFull()));
+    response->body() = response_json.dump(4); // Pretty print with 4-space indent
+    response->prepare_payload();
+
+    return response;
 }
 
 router_response Router::plain_response_router(const http::request<http::string_body>& request) {

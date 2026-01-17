@@ -62,13 +62,18 @@ configure_network_dependencies(console_io)
 configure_network_dependencies(network_transmission)
 configure_network_dependencies(network_router)
 
+# Link nlohmann_json for JSON support
+find_package(nlohmann_json CONFIG REQUIRED)
+target_link_libraries(node_dht PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(network_router PRIVATE nlohmann_json::nlohmann_json)
+
 # Link bcrypt library for SHA256 support (Windows only)
 if(WIN32)
     target_link_libraries(node_validator PRIVATE bcrypt)
 endif()
 
 # Link libraries
-target_link_libraries(network_router PRIVATE node_validator console_io)
+target_link_libraries(network_router PRIVATE node_dht node_validator console_io)
 target_link_libraries(network_transmission PRIVATE network_router)
 
 # Main executable
