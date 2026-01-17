@@ -249,8 +249,14 @@ router_response Router::plain_response_router(const http::request<http::string_b
             // Range request takes priority
             file_response = m_cache.get_or_fetch_with_range(target_path, request.version(), range_header);
         } else if (has_conditional) {
-            // Conditional request
-            file_response = m_cache.get_or_fetch_with_conditional(target_path, request.version(), if_modified_since, if_none_match);
+            // Conditional request - returns variant
+            auto cache_response = m_cache.get_or_fetch_with_conditional(target_path, request.version(), if_modified_since, if_none_match);
+            // Convert variant to router_response
+            if (std::holds_alternative<std::shared_ptr<http::response<http::file_body>>>(cache_response)) {
+                return std::get<std::shared_ptr<http::response<http::file_body>>>(cache_response);
+            } else {
+                return std::get<std::shared_ptr<http::response<http::empty_body>>>(cache_response);
+            }
         } else {
             // Normal request
             file_response = m_cache.get_or_fetch(target_path, request.version());
@@ -277,8 +283,14 @@ router_response Router::plain_response_router(const http::request<http::string_b
             // Range request takes priority
             file_response = m_cache.get_or_fetch_with_range(path, request.version(), range_header);
         } else if (has_conditional) {
-            // Conditional request
-            file_response = m_cache.get_or_fetch_with_conditional(path, request.version(), if_modified_since, if_none_match);
+            // Conditional request - returns variant
+            auto cache_response = m_cache.get_or_fetch_with_conditional(path, request.version(), if_modified_since, if_none_match);
+            // Convert variant to router_response
+            if (std::holds_alternative<std::shared_ptr<http::response<http::file_body>>>(cache_response)) {
+                return std::get<std::shared_ptr<http::response<http::file_body>>>(cache_response);
+            } else {
+                return std::get<std::shared_ptr<http::response<http::empty_body>>>(cache_response);
+            }
         } else {
             // Normal request
             file_response = m_cache.get_or_fetch(path, request.version());

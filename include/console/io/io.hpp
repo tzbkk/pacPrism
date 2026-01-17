@@ -9,7 +9,14 @@
 
 namespace beast = boost::beast;
 namespace http = beast::http;
+
 namespace fs = std::filesystem;
+
+// Variant type for FileCache responses that can be either file_body or empty_body
+using file_cache_response = std::variant<
+    std::shared_ptr<http::response<http::file_body>>,
+    std::shared_ptr<http::response<http::empty_body>>
+>;
 
 // Configuration reader for pacPrism
 class Config {
@@ -84,8 +91,8 @@ public:
     void set_cache_dir(const std::string& cache_dir);
 
     // Get file with conditional request support (If-Modified-Since, If-None-Match)
-    // Returns HTTP 304 if not modified, HTTP 200/206 with file if modified
-    std::shared_ptr<http::response<http::file_body>> get_or_fetch_with_conditional(
+    // Returns HTTP 304 (empty_body) if not modified, HTTP 200/206 (file_body) if modified
+    file_cache_response get_or_fetch_with_conditional(
         const std::string& request_path,
         unsigned http_version,
         const std::string& if_modified_since,

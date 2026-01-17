@@ -301,7 +301,7 @@ std::shared_ptr<http::response<http::file_body>> FileCache::get_or_fetch(
         std::cout << "Cache miss for: " << request_path << ", fetching from upstream..." << std::endl;
         if (!fetch_from_upstream(request_path)) {
             std::cerr << "Failed to fetch: " << request_path << std::endl;
-            return nullptr;
+            return std::shared_ptr<http::response<http::file_body>>(nullptr);
         }
     }
 
@@ -316,8 +316,8 @@ std::shared_ptr<http::response<http::file_body>> FileCache::get_or_fetch(
     response->body().open(cache_path.c_str(), beast::file_mode::read, ec);
 
     if (ec) {
-        std::cerr << "Failed to open cached file: " << cache_path << " - " << ec.message() << std::endl;
-        return nullptr;
+            std::cerr << "Failed to open cached file: " << cache_path << " - " << ec.message() << std::endl;
+            return std::shared_ptr<http::response<http::file_body>>(nullptr);
     }
 
     // Set response headers
@@ -416,7 +416,7 @@ std::shared_ptr<http::response<http::file_body>> FileCache::get_or_fetch_with_ra
         std::cout << "Cache miss for: " << request_path << ", fetching from upstream..." << std::endl;
         if (!fetch_from_upstream(request_path)) {
             std::cerr << "Failed to fetch: " << request_path << std::endl;
-            return nullptr;
+            return std::shared_ptr<http::response<http::file_body>>(nullptr);
         }
         std::cout << "Successfully cached: " << request_path << std::endl;
     }
@@ -439,8 +439,8 @@ std::shared_ptr<http::response<http::file_body>> FileCache::get_or_fetch_with_ra
     // Open file with seek to start position
     response->body().open(cache_path.c_str(), beast::file_mode::read, ec);
     if (ec) {
-        std::cerr << "Failed to open cached file: " << cache_path << " - " << ec.message() << std::endl;
-        return nullptr;
+            std::cerr << "Failed to open cached file: " << cache_path << " - " << ec.message() << std::endl;
+            return std::shared_ptr<http::response<http::file_body>>(nullptr);
     }
 
     // Set file offset to range start
@@ -553,7 +553,7 @@ bool FileCache::check_modified_since(const std::string& if_modified_since, const
     }
 }
 
-std::shared_ptr<http::response<http::file_body>> FileCache::get_or_fetch_with_conditional(
+file_cache_response FileCache::get_or_fetch_with_conditional(
     const std::string& request_path,
     unsigned http_version,
     const std::string& if_modified_since,
@@ -564,7 +564,7 @@ std::shared_ptr<http::response<http::file_body>> FileCache::get_or_fetch_with_co
         std::cout << "Cache miss for: " << request_path << ", fetching from upstream..." << std::endl;
         if (!fetch_from_upstream(request_path)) {
             std::cerr << "Failed to fetch: " << request_path << std::endl;
-            return nullptr;
+            return std::shared_ptr<http::response<http::file_body>>(nullptr);
         }
         std::cout << "Successfully cached: " << request_path << std::endl;
     }
@@ -614,8 +614,8 @@ std::shared_ptr<http::response<http::file_body>> FileCache::get_or_fetch_with_co
     response->body().open(cache_path.c_str(), beast::file_mode::read, ec);
 
     if (ec) {
-        std::cerr << "Failed to open cached file: " << cache_path << " - " << ec.message() << std::endl;
-        return nullptr;
+            std::cerr << "Failed to open cached file: " << cache_path << " - " << ec.message() << std::endl;
+            return std::shared_ptr<http::response<http::file_body>>(nullptr);
     }
 
     response->set(http::field::content_type, "application/octet-stream");
