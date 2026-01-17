@@ -323,6 +323,8 @@ std::shared_ptr<http::response<http::file_body>> FileCache::get_or_fetch(
     // Set response headers
     response->set(http::field::content_type, "application/octet-stream");
     response->set(http::field::server, "pacPrism/0.1.0");
+    response->set(http::field::last_modified, get_last_modified(cache_path));
+    response->set(http::field::etag, generate_etag(cache_path));
     response->content_length(response->body().size());
 
     response->prepare_payload();
