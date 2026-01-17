@@ -188,14 +188,14 @@ function Test-DhtStore {
         $httpCode = $lines[-1]
         $body = $lines[0..($lines.Count-2)] -join "`n"
 
-        if ($httpCode -eq "200") {
+        if ($httpCode -eq "201") {
             if ($body -match "success|stored") {
                 Print-Pass "DHT store operation succeeded"
             } else {
-                Print-Fail "DHT store returned HTTP 200 but unexpected response: $body"
+                Print-Fail "DHT store returned HTTP 201 but unexpected response: $body"
             }
         } else {
-            Print-Fail "Expected HTTP 200, got ${httpCode}: $body"
+            Print-Fail "Expected HTTP 201, got ${httpCode}: $body"
         }
     } catch {
         Print-Fail "Exception: $_"

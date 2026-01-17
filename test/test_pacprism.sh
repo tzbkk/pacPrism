@@ -156,14 +156,14 @@ test_dht_store() {
     HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
     BODY=$(echo "$RESPONSE" | sed '$d')
 
-    if [ "$HTTP_CODE" = "200" ]; then
+    if [ "$HTTP_CODE" = "201" ]; then
         if echo "$BODY" | grep -q "success\|stored"; then
             print_pass "DHT store operation succeeded"
         else
-            print_fail "DHT store returned HTTP 200 but unexpected response: $BODY"
+            print_fail "DHT store returned HTTP 201 but unexpected response: $BODY"
         fi
     else
-        print_fail "Expected HTTP 200, got $HTTP_CODE: $BODY"
+        print_fail "Expected HTTP 201, got $HTTP_CODE: $BODY"
     fi
 }
 
