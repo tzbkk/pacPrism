@@ -4,6 +4,8 @@
 
 > **系统软件包的分布式缓存层** - 高性能包感知透明代理
 
+**当前版本: v0.1.0** | [发布说明](CHANGELOG.md)
+
 [English Version](README.md)
 
 ## 愿景

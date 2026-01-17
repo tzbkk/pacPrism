@@ -4,6 +4,8 @@
 
 > **Distributed Caching Layer for System Packages** - High-Performance Package-Aware Transparent Proxy
 
+**Current Version: v0.1.0** | [Release Notes](CHANGELOG.md)
+
 [中文版本](README_zh.md)
 
 ## Vision
