@@ -3,6 +3,7 @@
 // Forward declarations for test suite runners
 void run_validator_tests();
 void run_dht_tests();
+void run_package_parser_tests();
 void run_parser_tests();
 void run_banner_tests();
 void run_io_tests();
@@ -18,6 +19,7 @@ int main(int argc, char* argv[]) {
     // Run all test suites
     run_validator_tests();
     run_dht_tests();
+    run_package_parser_tests();
     run_parser_tests();
     run_banner_tests();
     run_io_tests();

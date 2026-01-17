@@ -11,6 +11,7 @@ add_executable(pacprism_tests
     main.cpp
     node/validator/test_validator.cpp
     node/dht/test_dht.cpp
+    node/package/test_parser.cpp
     console/parser/test_parser.cpp
     console/banner/test_banner.cpp
     console/io/test_io.cpp
@@ -30,6 +31,7 @@ target_include_directories(pacprism_tests PRIVATE
 target_link_libraries(pacprism_tests PRIVATE
     node_validator
     node_dht
+    package_parser
     console_parser
     console_banner
     console_io

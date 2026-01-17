@@ -33,6 +33,10 @@ add_library(network_router SHARED
     network/router/router.cpp
 )
 
+add_library(package_parser SHARED
+    node/package/parser.cpp
+)
+
 # Configure library targets
 configure_library_target(node_dht)
 configure_library_target(node_validator)
@@ -41,6 +45,7 @@ configure_library_target(console_banner)
 configure_library_target(console_io)
 configure_library_target(network_transmission)
 configure_library_target(network_router)
+configure_library_target(package_parser)
 
 # Add cxxopts include directory for console_parser
 target_include_directories(console_parser PRIVATE
@@ -55,6 +60,7 @@ get_version_info(console_banner)
 get_version_info(console_io)
 get_version_info(network_transmission)
 get_version_info(network_router)
+get_version_info(package_parser)
 
 # Configure network-specific dependencies
 configure_network_dependencies(node_validator)
