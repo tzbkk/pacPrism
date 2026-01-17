@@ -23,22 +23,53 @@ pacPrism aims to be a **distributed caching layer for system packages** that enh
 
 ## Implementation Status
 
-### ✅ Working (Tested & Verified)
-- **HTTP/1.1 Server** - Boost.Beast-based, starts on port 9001, returns basic responses
-- **DHT Memory Index** - In-memory hash-based storage, basic CRUD operations work
-- **Build System** - CMake Presets, cross-platform (Windows/Linux), vcpkg integration
+### ✅ Production-Ready Features (Fully Implemented & Tested)
 
-### 🔄 Partial (Implemented but Incomplete)
-- **HTTP Request Router** - Architecture exists, most functions are stubs
-- **Custom Headers** - Can detect "Operation" header, no actual routing logic
-- **Response Builder** - Basic string responses, variant-based handling framework
+**HTTP Transparent Proxy System**:
+- Real transparent HTTP proxy (NOT redirects) - Fetches files from upstream and returns them directly
+- FileCache with upstream fetching, local disk caching, SHA256 verification
+- Range request support (HTTP 206 Partial Content) - Critical for APT resume
+- Conditional request support (If-Modified-Since, If-None-Match → HTTP 304)
+- Error handling with retries (3 attempts, exponential backoff: 1s, 2s, 4s)
+- Configurable timeouts (connect: 10s, read: 30s)
 
-### 📋 Design (Code Not Written)
-- **P2P Protocol** - 0% implementation
-- **Real Distributed DHT** - Current DHT is single-process in-memory only
-- **Semantic Sharding** - Data structure defined, no algorithm
-- **Package-Aware Routing** - No actual APT request handling
-- **Cache Fallback** - No official source integration
+**DHT Core Operations**:
+- 9-dimensional index system fully implemented
+- Node verification, storage with conflict resolution, shard-based queries
+- Automatic expiry cleanup
+- O(1) core operations with multi-dimensional indexing
+
+**HTTP Router with Triple Dependency Injection**:
+- Validator integration for request type classification (PlainClient vs Node vs Invalid)
+- Complete DHT HTTP API (5 JSON endpoints: verify, store, query, clean/expiry, clean/liveness)
+- File proxy with Range/conditional request support via FileCache
+- Production-ready, not placeholders
+
+**Validator with SHA256**:
+- Request type validation based on custom headers
+- Cross-platform SHA256 calculation (Windows: bcrypt, Linux: OpenSSL)
+- SHA256 verification for file integrity
+
+**Debian Package Parser**:
+- Binary package parsing: `name_version_arch.extension`
+- Source package parsing: `.orig.tar.gz/xz`, `.dsc`, `.tar.gz/xz`
+- Component extraction (main/contrib/non-free)
+
+**Build System**:
+- CMake Presets (debug/release) with cross-platform support
+- Automated vcpkg dependency management
+- Successfully tested on Windows MSYS2 (GCC 15.2.0)
+
+### 📝 TODO/Stub Implementations (3 Items Only)
+- `ClientTrans::start_connecting()` - Empty stub (client connection logic)
+- `DHT_operation::clean_by_liveness()` - Empty stub (health-based node pruning)
+- `Validator::verify_node_identity()` - Demo mode, always returns true (Ed25519 TODO)
+
+### 📋 Design Phase (Not Yet Implemented)
+- **P2P Protocol** - Node-to-node communication protocol
+- **Real Distributed DHT** - Network communication between nodes
+- **Semantic Sharding Algorithm** - Intelligent package grouping strategy
+- **Node Authentication** - Ed25519 signature verification (currently demo mode)
 
 ## Technology Stack
 

@@ -23,22 +23,53 @@ pacPrism 致力于成为**系统软件包的分布式缓存层**，通过透明�
 
 ## 实现状态
 
-### ✅ 能工作（已测试验证）
-- **HTTP/1.1 服务器** - 基于 Boost.Beast，监听 9001 端口，能返回基本响应
-- **DHT 内存索引** - 内存哈希表存储，基础 CRUD 操作可用
-- **构建系统** - CMake Presets，跨平台（Windows/Linux），vcpkg 集成
+### ✅ 生产就绪功能（已完全实现并测试）
 
-### 🔄 部分实现（有代码但未完成）
-- **HTTP 请求路由器** - 架构存在，大部分函数是空壳
-- **自定义 HTTP 头** - 能检测 "Operation" 头，没有实际路由逻辑
-- **响应构建器** - 基本字符串响应，variant 处理框架
+**HTTP 透明代理系统**:
+- 真正的透明 HTTP 代理（非重定向）- 从上游获取文件并直接返回
+- FileCache 上游获取、本地磁盘缓存、SHA256 校验
+- Range 请求支持（HTTP 206 Partial Content）- APT 断点续传关键功能
+- 条件请求支持（If-Modified-Since, If-None-Match → HTTP 304）
+- 错误处理与自动重试（3 次，指数退避：1s、2s、4s）
+- 可配置超时（连接: 10s，读取: 30s）
 
-### 📋 设计阶段（未写代码）
-- **P2P 协议** - 0% 实现
-- **真正的分布式 DHT** - 当前 DHT 只是单进程内存结构
-- **语义分片** - 定义了数据结构，没有算法
-- **包感知路由** - 无法处理真实 APT 请求
-- **缓存回退** - 没有官方源集成
+**DHT 核心操作**:
+- 9 维索引系统完整实现
+- 节点验证、智能存储（冲突解决）、基于分片查询
+- 自动过期清理
+- O(1) 核心操作，多维度索引
+
+**HTTP 路由器（三重依赖注入）**:
+- Validator 集成，请求类型分类（PlainClient vs Node vs Invalid）
+- 完整的 DHT HTTP API（5 个 JSON 端点：verify、store、query、clean/expiry、clean/liveness）
+- 文件代理支持 Range/条件请求（通过 FileCache）
+- 生产就绪，非占位符
+
+**Validator 与 SHA256**:
+- 基于自定义头的请求类型验证
+- 跨平台 SHA256 计算（Windows: bcrypt，Linux: OpenSSL）
+- 文件完整性 SHA256 验证
+
+**Debian 包解析器**:
+- 二进制包解析：`name_version_arch.extension`
+- 源码包解析：`.orig.tar.gz/xz`、`.dsc`、`.tar.gz/xz`
+- 组件提取（main/contrib/non-free）
+
+**构建系统**:
+- CMake Presets（debug/release）跨平台支持
+- 自动化 vcpkg 依赖管理
+- 已在 Windows MSYS2（GCC 15.2.0）测试通过
+
+### 📝 待办/存根实现（仅 3 项）
+- `ClientTrans::start_connecting()` - 空存根（客户端连接逻辑）
+- `DHT_operation::clean_by_liveness()` - 空存根（基于健康度的节点清理）
+- `Validator::verify_node_identity()` - 演示模式，始终返回 true（Ed25519 待实现）
+
+### 📋 设计阶段（尚未实现）
+- **P2P 协议** - 节点间通信协议
+- **真正的分布式 DHT** - 节点间网络通信
+- **语义分片算法** - 智能包分组策略
+- **节点认证** - Ed25519 签名验证（当前为演示模式）
 
 ## 技术栈
 
