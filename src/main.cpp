@@ -36,9 +36,14 @@ int main(int argc, char* argv[]) {
     std::cout << "Initing validator..." << std::endl;
     Validator validator;
 
+    // Init file cache.
+    std::cout << "Initing file cache..." << std::endl;
+    std::string cache_dir = "./cache";  // Default cache directory
+    FileCache cache(cache_dir, upstream);
+
     // Init router.
     std::cout << "Initing router..." << std::endl;
-    Router router(dht, validator, upstream);
+    Router router(dht, validator, cache);
 
     // Init server.
     std::cout << "Starting HTTP server..." << std::endl;

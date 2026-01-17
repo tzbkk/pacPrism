@@ -5,10 +5,11 @@
 #include <node/dht/dht_operation.hpp>
 #include <node/validator/validator.hpp>
 #include <network/router/router.hpp>
+#include <console/io/io.hpp>
 #include <pacPrism/version.h>
 
-Router::Router(DHT_operation& dht, Validator& validator, const std::string& upstream)
-    : m_dht(dht), m_validator(validator), m_upstream(upstream) {};
+Router::Router(DHT_operation& dht, Validator& validator, FileCache& cache)
+    : m_dht(dht), m_validator(validator), m_cache(cache) {};
 
 router_response Router::global_router(const http::request<http::string_body>& request) {
     // Delegate validation to Validator
@@ -54,11 +55,15 @@ router_response Router::plain_response_router(const http::request<http::string_b
         }
     }
 
-    // If target parameter exists, redirect to upstream
+    // If target parameter exists, try to serve from cache
     if (!target.empty()) {
-        // Construct redirect URL: http://upstream/target
-        std::string redirect_url = std::format("http://{}/{}", m_upstream, target);
-        return redirect_builder(redirect_url, request.version());
+        // Request has target parameter (e.g., /?target=/debian/pool/...)
+        std::string target_path = (target[0] == '/') ? target : "/" + target;
+        auto file_response = m_cache.get_or_fetch(target_path, request.version());
+        if (file_response) {
+            return file_response;
+        }
+        return default_response_builder("Failed to fetch file from upstream.", request.version(), http::status::bad_gateway);
     }
 
     // No target parameter in query string
@@ -67,11 +72,12 @@ router_response Router::plain_response_router(const http::request<http::string_b
 
     if (path != "/" && !path.empty()) {
         // This is a direct file path request (e.g., /debian/pool/main/...)
-        // Redirect the entire path to upstream
-        // Remove leading slash from path to avoid double slashes in URL
-        std::string clean_path = (path[0] == '/') ? path.substr(1) : path;
-        std::string redirect_url = std::format("http://{}/{}", m_upstream, clean_path);
-        return redirect_builder(redirect_url, request.version());
+        // Try to serve from cache
+        auto file_response = m_cache.get_or_fetch(path, request.version());
+        if (file_response) {
+            return file_response;
+        }
+        return default_response_builder("Failed to fetch file from upstream.", request.version(), http::status::bad_gateway);
     }
 
     // Request is just "/" with no target parameter - return hello message

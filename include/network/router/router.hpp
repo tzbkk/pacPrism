@@ -12,6 +12,9 @@
 namespace beast = boost::beast;
 namespace http = beast::http;
 
+// Forward declaration
+class FileCache;
+
 using router_response = std::variant<
     std::shared_ptr<http::response<http::string_body>>,
     std::shared_ptr<http::response<http::file_body>>,
@@ -20,7 +23,7 @@ using router_response = std::variant<
 
 class Router {
 public:
-    Router(DHT_operation& dht, Validator& validator, const std::string& upstream);
+    Router(DHT_operation& dht, Validator& validator, FileCache& cache);
     // Route request by operation.
     router_response global_router(const http::request<http::string_body>& request);
 
@@ -40,5 +43,5 @@ private:
 private:
     DHT_operation& m_dht;
     Validator& m_validator;
-    std::string m_upstream;
+    FileCache& m_cache;
 };

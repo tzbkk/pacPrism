@@ -58,11 +58,12 @@ get_version_info(network_router)
 
 # Configure network-specific dependencies
 configure_network_dependencies(node_validator)
+configure_network_dependencies(console_io)
 configure_network_dependencies(network_transmission)
 configure_network_dependencies(network_router)
 
 # Link libraries
-target_link_libraries(network_router PRIVATE node_validator)
+target_link_libraries(network_router PRIVATE node_validator console_io)
 target_link_libraries(network_transmission PRIVATE network_router)
 
 # Main executable
