@@ -10,7 +10,7 @@ bool Parser::parse(int argc, char* argv[]) {
 
         // Default values
         unsigned short port = 9001;
-        std::string config_path = "build/config/pacprism.conf";
+        std::string config_path = "../config/pacprism.conf";
 
         options.add_options()
             ("h,help", "Print usage information")
