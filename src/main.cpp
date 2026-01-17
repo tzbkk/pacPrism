@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
 
     // Init file cache.
     std::cout << "Initing file cache..." << std::endl;
-    FileCache cache(cache_dir, upstream);
+    FileCache cache(config, cache_dir, upstream);
 
     // Init router.
     std::cout << "Initing router..." << std::endl;

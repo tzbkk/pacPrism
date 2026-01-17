@@ -37,6 +37,11 @@ public:
     std::string get_upstream() const;
     std::string get_cache_dir() const;
 
+    // Get error handling configuration
+    int get_max_retries() const;
+    int get_connect_timeout() const;
+    int get_read_timeout() const;
+
 private:
     std::unordered_map<std::string, std::string> m_config;
 
@@ -51,7 +56,7 @@ private:
 // Handles caching of package files from upstream mirrors
 class FileCache {
 public:
-    FileCache(const std::string& cache_dir, const std::string& upstream_host);
+    FileCache(const Config& config, const std::string& cache_dir, const std::string& upstream_host);
     ~FileCache() = default;
 
     // Get file from cache or fetch from upstream
@@ -78,6 +83,15 @@ public:
     // Set cache directory
     void set_cache_dir(const std::string& cache_dir);
 
+    // Get file with conditional request support (If-Modified-Since, If-None-Match)
+    // Returns HTTP 304 if not modified, HTTP 200/206 with file if modified
+    std::shared_ptr<http::response<http::file_body>> get_or_fetch_with_conditional(
+        const std::string& request_path,
+        unsigned http_version,
+        const std::string& if_modified_since,
+        const std::string& if_none_match
+    );
+
 private:
     // Fetch file from upstream and cache it
     bool fetch_from_upstream(const std::string& request_path);
@@ -89,6 +103,7 @@ private:
     std::string build_upstream_url(const std::string& request_path) const;
 
 private:
+    const Config& m_config;
     fs::path m_cache_dir;
     std::string m_upstream_host;
 
@@ -100,4 +115,16 @@ private:
         std::size_t file_size = 0;
     };
     RangeInfo parse_range_header(const std::string& range_header, const std::string& cache_path) const;
+
+    // Helper: Get file modification time as HTTP date format
+    std::string get_last_modified(const std::string& cache_path) const;
+
+    // Helper: Generate ETag from file size and modification time
+    std::string generate_etag(const std::string& cache_path) const;
+
+    // Helper: Check if file has been modified based on If-Modified-Since header
+    bool check_modified_since(const std::string& if_modified_since, const std::string& cache_path) const;
+
+    // Helper: Parse HTTP date format
+    std::time_t parse_http_date(const std::string& date_str) const;
 };

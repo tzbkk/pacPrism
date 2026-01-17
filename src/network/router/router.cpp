@@ -62,15 +62,36 @@ router_response Router::plain_response_router(const http::request<http::string_b
         range_header = std::string(range_it->value());
     }
 
+    // Check for conditional request headers
+    std::string if_modified_since, if_none_match;
+    auto ims_it = request.find(http::field::if_modified_since);
+    if (ims_it != request.end()) {
+        if_modified_since = std::string(ims_it->value());
+    }
+    auto inm_it = request.find(http::field::if_none_match);
+    if (inm_it != request.end()) {
+        if_none_match = std::string(inm_it->value());
+    }
+
+    // Determine if we have conditional headers
+    bool has_conditional = !if_modified_since.empty() || !if_none_match.empty();
+
     // If target parameter exists, try to serve from cache
     if (!target.empty()) {
         // Request has target parameter (e.g., /?target=/debian/pool/...)
         std::string target_path = (target[0] == '/') ? target : "/" + target;
 
         std::shared_ptr<http::response<http::file_body>> file_response;
+
+        // Priority: Range > Conditional > Normal
         if (!range_header.empty()) {
+            // Range request takes priority
             file_response = m_cache.get_or_fetch_with_range(target_path, request.version(), range_header);
+        } else if (has_conditional) {
+            // Conditional request
+            file_response = m_cache.get_or_fetch_with_conditional(target_path, request.version(), if_modified_since, if_none_match);
         } else {
+            // Normal request
             file_response = m_cache.get_or_fetch(target_path, request.version());
         }
 
@@ -89,9 +110,16 @@ router_response Router::plain_response_router(const http::request<http::string_b
         // Try to serve from cache
 
         std::shared_ptr<http::response<http::file_body>> file_response;
+
+        // Priority: Range > Conditional > Normal
         if (!range_header.empty()) {
+            // Range request takes priority
             file_response = m_cache.get_or_fetch_with_range(path, request.version(), range_header);
+        } else if (has_conditional) {
+            // Conditional request
+            file_response = m_cache.get_or_fetch_with_conditional(path, request.version(), if_modified_since, if_none_match);
         } else {
+            // Normal request
             file_response = m_cache.get_or_fetch(path, request.version());
         }
 
