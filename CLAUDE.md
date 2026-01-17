@@ -180,19 +180,36 @@ pacPrism/
 - Stream buffer proper usage with `prepare()`/`commit()`
 - Router integration for DHT operation support
 
-### HTTP Request Router (`lib/network/router/`)
+### HTTP Request Router (`src/network/router/`)
 
-**Router** class provides HTTP request routing with DHT integration (added 2025-12-21):
-- `Router(DHT_operation&)`: Dependency injection constructor
-- `route_operation()`: Main routing logic for "Operation" header handling
-- `operation_store()`: DHT storage operation handler
-- `plain_response_router()`: Default response handler (implementation pending)
-- `node_response_router()`: Node query routing (placeholder)
+**Router** class provides HTTP request routing with Validator, DHT, and FileCache integration (fully implemented):
+- `Router(DHT_operation&, Validator&, FileCache&)`: Multi-dependency injection constructor
+- `global_router()`: Main routing entry point - validates request type and dispatches to appropriate handler
+- `plain_response_router()`: Handles regular client requests (file downloads, Range requests, conditional requests)
+- `node_response_router()`: Handles DHT API requests with JSON request/response
+- `default_response_builder()`: Constructs simple text responses
+
+**Plain Client Routes** (plain_response_router):
+- Direct file paths: `/debian/pool/main/v/vim/vim_9.0.0.deb`
+- Query parameter paths: `/?target=/debian/pool/...`
+- Supports Range requests (HTTP 206 Partial Content)
+- Supports conditional requests (If-Modified-Since, If-None-Match → HTTP 304)
+- Integrates with FileCache for upstream fetching and local caching
+
+**DHT API Routes** (node_response_router):
+- `GET /api/dht/verify/{node_id}` - Check if node exists in DHT
+- `POST /api/dht/store` - Store new DHT entry (JSON body)
+- `GET /api/dht/query?shard_id={id}` - Query nodes by shard ID
+- `POST /api/dht/clean/expiry` - Remove expired entries
+- `POST /api/dht/clean/liveness` - Remove unhealthy entries
+- All responses use JSON format with proper HTTP status codes
 
 **Architecture Features:**
-- Loose coupling with DHT through dependency injection
-- Foundation for HTTP API layer over DHT functionality
-- Separation of HTTP routing concerns from DHT operations
+- Triple dependency injection (Validator, DHT, FileCache) for loose coupling
+- Request type validation via Validator component
+- JSON serialization via nlohmann/json library
+- Complete error handling with appropriate HTTP status codes
+- Production-ready HTTP proxy functionality, not placeholders
 
 ### DHT Distributed Index (`lib/node/dht/`)
 
