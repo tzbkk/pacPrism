@@ -579,7 +579,7 @@ file_cache_response FileCache::get_or_fetch_with_conditional(
             // File not modified, return HTTP 304
             std::cout << "Conditional request: Not modified (304) for " << request_path << std::endl;
 
-            auto response = std::make_shared<http::response<http::file_body>>(http::status::not_modified, http_version);
+            auto response = std::make_shared<http::response<http::empty_body>>(http::status::not_modified, http_version);
             response->set(http::field::server, "pacPrism/0.1.0");
             response->set(http::field::date, get_last_modified(cache_path));
             response->set(http::field::etag, generate_etag(cache_path));
@@ -596,7 +596,7 @@ file_cache_response FileCache::get_or_fetch_with_conditional(
             // ETag matches, return HTTP 304
             std::cout << "Conditional request: ETag match (304) for " << request_path << std::endl;
 
-            auto response = std::make_shared<http::response<http::file_body>>(http::status::not_modified, http_version);
+            auto response = std::make_shared<http::response<http::empty_body>>(http::status::not_modified, http_version);
             response->set(http::field::server, "pacPrism/0.1.0");
             response->set(http::field::date, get_last_modified(cache_path));
             response->set(http::field::etag, current_etag);
