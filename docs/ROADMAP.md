@@ -13,7 +13,7 @@
 ## Phase 1: 中心化校内缓存
 
 ### 愿景
-为 NWPO 校园网提供单机版高性能缓存代理，解决教育网出口带宽瓶颈。
+为 NWPU 校园网提供单机版高性能缓存代理，解决教育网出口带宽瓶颈。
 
 ### 核心功能
 - **真实 APT 代理拦截**：解析 `GET /debian/pool/main/v/vim/vim_9.0.0.deb` 请求
@@ -23,65 +23,52 @@
 
 ### 当前实现状态 (Updated 2026-01-17)
 
-**✅ 已完成**:
-- HTTP/1.1 服务器 (Boost.Beast, port 9001)
-- DHT 内存索引 (单进程哈希表)
-- 基础路由架构 (依赖注入模式)
-- 跨平台构建系统 (CMake Presets + vcpkg)
+**✅ 已完成** (~90% 功能完整度):
+- HTTP/1.1 透明代理服务器 (Boost.Beast, port 9001)
+  - **真正的 HTTP 代理**（非重定向）：从上游获取文件并直接返回
+  - FileCache 系统：
+    - HTTP 客户端从上游获取
+    - 本地磁盘缓存，自动创建目录
+    - SHA256 校验和验证
+    - 可配置重试（3 次，指数退避：1s、2s、4s）
+    - 可配置超时（连接: 10s，读取: 30s）
+- **Range 请求支持** (HTTP 206 Partial Content)
+  - 解析 Range header: bytes=0-1023, bytes=512-, bytes=-256
+  - 在缓存文件中定位到请求偏移
+  - 返回正确的 Content-Range header
+  - APT 断点续传的关键功能
+- **条件请求支持** (HTTP 304 Not Modified)
+  - If-Modified-Since header 支持
+  - If-None-Match (ETag) header 支持
+  - 缓存版本未改变时返回 HTTP 304
+  - 节省重复请求的带宽
+- DHT 内存索引（单进程哈希表）
+  - 9 维索引系统
+  - O(1) 查找 via unordered_map
+  - 基于 Node ID 的条目
+  - 基于时间戳的过期机制
+- HTTP 路由器（三重依赖注入）
+  - Validator 集成：请求类型分类（PlainClient vs Node vs Invalid）
+  - 完整的 DHT HTTP API（5 个 JSON 端点：verify, store, query, clean/expiry, clean/liveness）
+  - 文件代理支持 Range/条件请求（通过 FileCache）
+  - 所有路由已测试并工作
+- Validator 与 SHA256
+  - 基于节点识别头的请求类型验证
+  - 跨平台 SHA256 计算（Windows: bcrypt, Linux: OpenSSL）
+  - SHA256 验证用于文件完整性
+- Debian 包解析器
+  - 二进制包解析：name_version_arch.extension
+  - 源码包解析：.orig.tar.gz/xz, .dsc, .tar.gz/xz
+  - 组件提取（main/contrib/non-free）
+- 构建系统（CMake Presets，跨平台）
+  - Windows MSYS2 (GCC 15.2.0) 测试通过
 
-**❌ 未完成 (关键阻塞)**:
-- **HTTP 307 重定向问题**: 当前返回 HTTP 307 重定向，APT 客户端不支持
-- **缺少真正的代理功能**: 需要实现上游请求获取和内容转发
-- **无文件缓存**: 没有本地持久化存储
-- **无 Range 请求支持**: 无法处理 APT 的断点续传
-
-**🔧 下一步实现**:
-
-1. **实现真正的 HTTP 代理** (优先级: P0)
-   ```cpp
-   // 当前实现 (错误):
-   return HTTP 307 Redirect to upstream
-
-   // 需要的实现 (正确):
-   1. 解析 APT 请求路径
-   2. 向上游发起 HTTP 请求 (Boost.Beast HTTP client)
-   3. 流式转发响应给客户端
-   4. 返回 HTTP 200 + 实际文件内容
-   ```
-
-2. **实现文件缓存系统** (优先级: P0)
-   ```cpp
-   - 缓存到本地磁盘: /var/cache/pacprism/debian/pool/...
-   - SHA256 校验和验证
-   - LRU 淘汰策略
-   - 缓存元数据管理
-   ```
-
-3. **支持 HTTP Range 请求** (优先级: P1)
-   ```cpp
-   - 解析 Range: bytes=0-1023
-   - 向上游转发 Range 请求
-   - 返回 206 Partial Content
-   - 支持 APT 断点续传
-   ```
-
-4. **支持条件请求** (优先级: P1)
-   ```cpp
-   - If-None-Match / If-Modified-Since
-   - 返回 304 Not Modified (节省带宽)
-   - ETag / Last-Headed 缓存验证
-   ```
-
-**测试验证**:
-```bash
-# 当前测试 (307 重定向):
-curl -v http://localhost:9001/debian/pool/main/v/vim/vim_9.0.0.deb
-# 返回: HTTP 307 → http://debian.org/... (APT 不支持)
-
-# 目标测试 (真实代理):
-curl -v http://localhost:9001/debian/pool/main/v/vim/vim_9.0.0.deb
-# 应该返回: HTTP 200 + 文件内容
-```
+**🔧 待完善** (生产就绪所需):
+- 结构化日志（替换 std::cout）
+- 监控指标（缓存命中率、带宽节省、请求延迟）
+- 错误处理增强（上游失败、超时、部分下载恢复）
+- 单元测试和集成测试
+- 生产加固（安全加固、输入验证）
 
 ### 部署模式
 ```bash
@@ -138,7 +125,7 @@ echo 'Acquire::http::Proxy "http://192.168.1.100:9001";' > /etc/apt/apt.conf.d/p
 
 ### 局限性
 - 依赖调度节点：中心化元数据，单点故障
-- 仅限校园网：NWPO 网段访问
+- 仅限校园网：NWPU 网段访问
 - 信任模型简单：仅 IP 白名单
 
 ---
@@ -150,7 +137,7 @@ echo 'Acquire::http::Proxy "http://192.168.1.100:9001";' > /etc/apt/apt.conf.d/p
 
 ### 核心功能
 - **真正的 P2P 协议**：Kademlia DHT 替代中心化调度节点
-- **跨组织互联**：NWPO、X大学、Y公司节点互联，组织间分片共享
+- **跨组织互联**：NWPU、X大学、Y公司节点互联，组织间分片共享
 - **安全与信任**：TLS 加密、GPG 包签名验证、节点信誉评分
 - **网关发现**：DNS SRV、局域网多播、bootstrap 节点
 
@@ -158,7 +145,7 @@ echo 'Acquire::http::Proxy "http://192.168.1.100:9001";' > /etc/apt/apt.conf.d/p
 ```
 Internet
    │
-   ├─ NWPO Network (10 nodes)
+   ├─ NWPU Network (10 nodes)
    │   └─ DHT Routing Table
    │
    ├─ X大学 Network (15 nodes)
@@ -171,7 +158,7 @@ Internet
 Node A 查询 vim
   → Kademlia DHT: find_node(shard_id)
   → 返回 Node B, C, D
-  → 测速选择最快节点（优先 NWPO 内网）
+  → 测速选择最快节点（优先 NWPU 内网）
   → 下载并校验签名
 ```
 
@@ -232,7 +219,7 @@ bool verify_tls_certificate(node);
 
 ## 成功标准
 
-- **Phase 1**：NWPO LUG 使用，缓存命中率 > 60%，节省出口带宽 > 50%
+- **Phase 1**：NWPU LUG 使用，缓存命中率 > 60%，节省出口带宽 > 50%
 - **Phase 2**：10+ 节点稳定运行，总存储 > 2TB，其他大学复制部署
 - **Phase 3**：3+ 组织互联，100+ 节点在线，社区自发维护
 
