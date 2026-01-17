@@ -62,6 +62,11 @@ configure_network_dependencies(console_io)
 configure_network_dependencies(network_transmission)
 configure_network_dependencies(network_router)
 
+# Link bcrypt library for SHA256 support (Windows only)
+if(WIN32)
+    target_link_libraries(node_validator PRIVATE bcrypt)
+endif()
+
 # Link libraries
 target_link_libraries(network_router PRIVATE node_validator console_io)
 target_link_libraries(network_transmission PRIVATE network_router)
