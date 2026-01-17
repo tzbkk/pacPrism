@@ -26,15 +26,22 @@ pacPrism is a **distributed caching layer for system packages** that enhances ex
 **This is early-stage prototype code.** Most features above are design goals, not working implementations.
 
 **What Works**:
-- HTTP/1.1 server (Boost.Beast, port 9001, returns basic responses)
+- HTTP/1.1 transparent proxy (Boost.Beast, port 9001)
+- Real file caching with upstream fetching and local storage
+- HTTP conditional requests (If-Modified-Since, If-None-Match, HTTP 304)
+- Range request support (HTTP 206 partial content)
+- Error handling with retries and exponential backoff
+- SHA256 checksum verification for file integrity
 - DHT in-memory index (single-process hash table, basic CRUD operations)
+- Comprehensive test suite (98 tests, 97 passing)
 - Build system (CMake Presets, cross-platform)
 
 **What's Incomplete**:
-- HTTP Router architecture exists but most functions are stubs
-- Cannot handle real APT requests
-- No true distributed functionality (single-process in-memory only)
-- No file caching, P2P communication, or package-aware routing
+- DHT HTTP APIs for node operations
+- P2P communication between nodes
+- Package-aware routing and sharding logic
+- True distributed functionality (single-process in-memory only)
+- Node authentication and signature verification (demo mode only)
 
 For detailed status, see [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md).
 
@@ -240,62 +247,72 @@ pacPrism/
 - "Refactored" = changed working code, not "rewrote because first version was wrong"
 
 **Reality Check:**
-- HTTP server that returns "Hello" = 5% of production proxy
+- Working HTTP proxy with caching = 40% of production proxy
+- Conditional and Range request support = 60% of production proxy
 - In-memory hash maps = 0% of distributed system
 - Design documents ≠ working system
 
 ### Current Implementation Priority (Updated 2026-01-17)
-1. **Implement True Transparent Proxy** - Replace HTTP 307 redirects with actual proxy functionality
-2. **File Caching System** - Cache upstream responses to local filesystem
-3. **Complete Router Implementation** - Fix return statements and add missing functionality
-4. **DHT Operation HTTP APIs** - Implement complete HTTP interface for all DHT operations
-5. **Package-Aware Logic** - Intelligent distribution based on package names and shard analysis
-6. **JSON Request/Response Processing** - Support structured data exchange
-7. **Error Handling and Status Codes** - Comprehensive HTTP error management
+1. **DHT Operation HTTP APIs** - Implement complete HTTP interface for all DHT operations (store, query, clean)
+2. **Package-Aware Logic** - Intelligent distribution based on package names and shard analysis
+3. **JSON Request/Response Processing** - Support structured data exchange for DHT operations
+4. **Node Authentication** - Implement Ed25519 signature verification (currently demo mode)
+5. **P2P Communication** - Node-to-node file transfer and DHT synchronization
+6. **Sharding Strategy** - Implement semantic package grouping for dependency completeness
+7. **Performance Optimization** - Load testing, caching strategies, connection pooling
 
 ### HTTP Proxy Implementation Status
 
-**Current Behavior (NOT Production Ready)**:
-- Router returns **HTTP 307 Temporary Redirect** to upstream server
-- Example: `GET /debian/pool/main/...` → 307 → `http://debian.org/debian/pool/main/...`
-- This works for browsers with `-L` flag but **fails for APT clients**
-- APT does NOT follow redirects - it expects direct file content
+**Current Behavior (WORKING)**:
+- Router acts as **transparent HTTP proxy** - fetches files from upstream and returns them directly
+- File caching system with upstream fetching and local disk storage
+- Supports **Range requests** (HTTP 206 partial content for resuming downloads)
+- Supports **conditional requests** (If-Modified-Since, If-None-Match → HTTP 304 if cached)
+- Error handling with automatic retries and exponential backoff (max 3 retries, configurable timeouts)
+- SHA256 checksum verification for file integrity validation
 
-**Required Implementation**:
-```cpp
-// Current (BROKEN for APT):
-return redirect_builder("http://debian.org/" + path, version);
-
-// Needed (WORKING for APT):
-// 1. Make HTTP request to upstream
-// 2. Stream response back to client
-// 3. Cache to local disk for future requests
-return proxy_response_builder(upstream_request, version);
-```
-
-**What APT Expects**:
+**What APT Gets**:
 ```
 GET /debian/pool/main/v/vim/vim_9.0.0.deb HTTP/1.1
 Host: proxy.example.com:9001
 
 Response (HTTP 200):
-Content-Type: application/vnd.debian.binary-package
+Content-Type: application/x-debian-package
 Content-Length: 1234567
+ETag: "abc123-def456"
+Last-Modified: Tue, 01 Jan 2025 12:00:00 GMT
 [binary file data]
 ```
 
-**What We Currently Return** (BROKEN):
+**What APT Gets with Conditional Request**:
 ```
-HTTP/1.1 307 Temporary Redirect
-Location: http://debian.org/debian/pool/main/v/vim/vim_9.0.0.deb
+GET /debian/pool/main/v/vim/vim_9.0.0.deb HTTP/1.1
+Host: proxy.example.com:9001
+If-None-Match: "abc123-def456"
+
+Response (HTTP 304 Not Modified):
+ETag: "abc123-def456"
+[no body - cached version is current]
 ```
 
-**Implementation Plan**:
-1. **Phase 1**: HTTP client to fetch from upstream (Boost.Beast HTTP client)
-2. **Phase 2**: Stream response back to APT client
-3. **Phase 3**: Cache files to disk (std::filesystem, SHA256 verification)
-4. **Phase 4**: Serve from cache if available
-5. **Phase 5**: Handle Range requests and conditional requests (If-None-Match, If-Modified-Since)
+**What APT Gets with Range Request**:
+```
+GET /debian/pool/main/v/vim/vim_9.0.0.deb HTTP/1.1
+Host: proxy.example.com:9001
+Range: bytes=0-1023
+
+Response (HTTP 206 Partial Content):
+Content-Range: bytes 0-1023/1234567
+Content-Length: 1024
+[first 1KB of file data]
+```
+
+**Implementation Status**:
+- ✅ **Phase 1**: HTTP client fetch from upstream (implemented in FileCache)
+- ✅ **Phase 2**: Stream response back to APT client
+- ✅ **Phase 3**: Cache files to disk with SHA256 verification
+- ✅ **Phase 4**: Serve from cache if available
+- ✅ **Phase 5**: Handle Range requests and conditional requests
 
 ### Testing and Verification
 
@@ -312,18 +329,19 @@ curl -H "Operation: store" http://localhost:9001/
 # (Does NOT actually store anything yet)
 ```
 
-**Debian Package Path (Current - Redirect)**:
+**Debian Package Path (Current - Working Proxy)**:
 ```bash
-curl -v http://localhost:9001/debian/pool/main/g/gnome-extra-icons/gnome-extra-icons_1.1-5.dsc
-# Returns: HTTP 307 Redirect to http://debian.org/...
-# This DOES NOT work for APT clients!
-```
+# Normal request - fetches from upstream and caches
+curl -v http://localhost:9001/debian/README
+# Returns: HTTP 200 with file content
 
-**Debian Package Path (Needed - Proxy)**:
-```bash
-# After implementing true proxy:
-curl -v http://localhost:9001/debian/pool/main/v/vim/vim_9.0.0.deb
-# Should return: HTTP 200 with file content (NOT redirect!)
+# Conditional request - returns 304 if cached, 200 with file if not
+curl -v -H "If-None-Match: \"abc123\"" http://localhost:9001/debian/README
+# Returns: HTTP 304 Not Modified (if cached) or HTTP 200 with file
+
+# Range request - returns partial content
+curl -v -H "Range: bytes=0-1023" http://localhost:9001/debian/README
+# Returns: HTTP 206 Partial Content with first 1KB of file
 ```
 
 **Windows PowerShell Note**:
