@@ -35,8 +35,7 @@ public:
 
     // Get specific configuration values
     std::string get_upstream() const;
-    unsigned short get_port() const;
-    std::string get_bind_address() const;
+    std::string get_cache_dir() const;
 
 private:
     std::unordered_map<std::string, std::string> m_config;
@@ -62,6 +61,14 @@ public:
         unsigned http_version
     );
 
+    // Get file with Range support
+    // Returns HTTP 206 for Range requests, HTTP 200 for normal requests
+    std::shared_ptr<http::response<http::file_body>> get_or_fetch_with_range(
+        const std::string& request_path,
+        unsigned http_version,
+        const std::string& range_header
+    );
+
     // Check if file exists in cache
     bool is_cached(const std::string& request_path) const;
 
@@ -84,4 +91,13 @@ private:
 private:
     fs::path m_cache_dir;
     std::string m_upstream_host;
+
+    // Helper: Parse Range header (e.g., "bytes=0-1023")
+    struct RangeInfo {
+        bool valid = false;
+        std::size_t start = 0;
+        std::size_t end = 0;
+        std::size_t file_size = 0;
+    };
+    RangeInfo parse_range_header(const std::string& range_header, const std::string& cache_path) const;
 };

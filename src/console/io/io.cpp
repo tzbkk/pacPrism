@@ -58,24 +58,11 @@ bool Config::has(const std::string& key) const {
 }
 
 std::string Config::get_upstream() const {
-    return get("upstream", "debian.org");
+    return get("upstream", "ftp.debian.org");
 }
 
-unsigned short Config::get_port() const {
-    std::string port_str = get("port", "9001");
-    try {
-        int port = std::stoi(port_str);
-        if (port < 1 || port > 65535) {
-            return 9001;
-        }
-        return static_cast<unsigned short>(port);
-    } catch (...) {
-        return 9001;
-    }
-}
-
-std::string Config::get_bind_address() const {
-    return get("bind_address", "0.0.0.0");
+std::string Config::get_cache_dir() const {
+    return get("cache_dir", "./cache");
 }
 
 std::string Config::trim(const std::string& str) {
@@ -274,6 +261,146 @@ std::shared_ptr<http::response<http::file_body>> FileCache::get_or_fetch(
     response->content_length(response->body().size());
 
     response->prepare_payload();
+
+    return response;
+}
+
+//==============================================================================
+// Range Request Support
+//==============================================================================
+
+FileCache::RangeInfo FileCache::parse_range_header(const std::string& range_header, const std::string& cache_path) const {
+    RangeInfo info;
+
+    // Get file size
+    try {
+        info.file_size = fs::file_size(cache_path);
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to get file size: " << e.what() << std::endl;
+        return info;
+    }
+
+    // Parse Range header: "bytes=start-end"
+    // Example: "bytes=0-1023", "bytes=512-", "bytes=-256"
+    if (range_header.empty()) {
+        return info;
+    }
+
+    // Check if it's a bytes range
+    const std::string bytes_prefix = "bytes=";
+    if (range_header.substr(0, bytes_prefix.length()) != bytes_prefix) {
+        return info;
+    }
+
+    std::string range_spec = range_header.substr(bytes_prefix.length());
+
+    // Parse start-end
+    size_t dash_pos = range_spec.find('-');
+    if (dash_pos == std::string::npos) {
+        return info;
+    }
+
+    std::string start_str = range_spec.substr(0, dash_pos);
+    std::string end_str = range_spec.substr(dash_pos + 1);
+
+    try {
+        if (start_str.empty()) {
+            // Suffix range: "-256" means last 256 bytes
+            std::size_t suffix = std::stoull(end_str);
+            if (suffix > info.file_size) {
+                info.start = 0;
+            } else {
+                info.start = info.file_size - suffix;
+            }
+            info.end = info.file_size - 1;
+        } else if (end_str.empty()) {
+            // Open-ended range: "512-" means from 512 to end
+            info.start = std::stoull(start_str);
+            info.end = info.file_size - 1;
+        } else {
+            // Normal range: "0-1023"
+            info.start = std::stoull(start_str);
+            info.end = std::stoull(end_str);
+        }
+
+        // Validate range
+        if (info.start >= info.file_size || info.end >= info.file_size || info.start > info.end) {
+            std::cerr << "Invalid range: start=" << info.start << ", end=" << info.end
+                      << ", file_size=" << info.file_size << std::endl;
+            return info;
+        }
+
+        info.valid = true;
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to parse range: " << e.what() << std::endl;
+        return info;
+    }
+
+    return info;
+}
+
+std::shared_ptr<http::response<http::file_body>> FileCache::get_or_fetch_with_range(
+    const std::string& request_path,
+    unsigned http_version,
+    const std::string& range_header
+) {
+    // Ensure file is cached first
+    if (!is_cached(request_path)) {
+        std::cout << "Cache miss for: " << request_path << ", fetching from upstream..." << std::endl;
+        if (!fetch_from_upstream(request_path)) {
+            std::cerr << "Failed to fetch: " << request_path << std::endl;
+            return nullptr;
+        }
+        std::cout << "Successfully cached: " << request_path << std::endl;
+    }
+
+    std::string cache_path = get_cache_path(request_path);
+
+    // Parse Range header
+    RangeInfo range = parse_range_header(range_header, cache_path);
+
+    // If no valid Range header, return normal response
+    if (!range.valid || range_header.empty()) {
+        return get_or_fetch(request_path, http_version);
+    }
+
+    // Create HTTP 206 Partial Content response
+    auto response = std::make_shared<http::response<http::file_body>>(http::status::partial_content, http_version);
+
+    beast::error_code ec;
+
+    // Open file with seek to start position
+    response->body().open(cache_path.c_str(), beast::file_mode::read, ec);
+    if (ec) {
+        std::cerr << "Failed to open cached file: " << cache_path << " - " << ec.message() << std::endl;
+        return nullptr;
+    }
+
+    // Set file offset to range start
+    response->body().seek(range.start, ec);
+    if (ec) {
+        std::cerr << "Failed to seek in file: " << ec.message() << std::endl;
+        return nullptr;
+    }
+
+    // Set Content-Length to the range size
+    std::size_t content_length = range.end - range.start + 1;
+    response->content_length(content_length);
+
+    // Set response headers
+    response->set(http::field::content_type, "application/octet-stream");
+    response->set(http::field::server, "pacPrism/0.1.0");
+    response->set(http::field::accept_ranges, "bytes");
+
+    // Set Content-Range header: "bytes start-end/total"
+    std::string content_range = std::format("bytes {}-{}/{}",
+        range.start, range.end, range.file_size);
+    response->set(http::field::content_range, content_range);
+
+    response->prepare_payload();
+
+    std::cout << "Range request: " << request_path
+              << " (" << range.start << "-" << range.end << "/" << range.file_size << ")" << std::endl;
 
     return response;
 }

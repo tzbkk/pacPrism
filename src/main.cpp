@@ -26,7 +26,9 @@ int main(int argc, char* argv[]) {
     Config config;
     config.load_from_file(parser.get_config_path());
     std::string upstream = config.get_upstream();
+    std::string cache_dir = config.get_cache_dir();
     std::cout << "Upstream: " << upstream << std::endl;
+    std::cout << "Cache directory: " << cache_dir << std::endl;
 
     // Init DHT.
     std::cout << "Initing DHT..." << std::endl;
@@ -38,7 +40,6 @@ int main(int argc, char* argv[]) {
 
     // Init file cache.
     std::cout << "Initing file cache..." << std::endl;
-    std::string cache_dir = "./cache";  // Default cache directory
     FileCache cache(cache_dir, upstream);
 
     // Init router.

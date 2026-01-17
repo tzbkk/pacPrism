@@ -55,11 +55,25 @@ router_response Router::plain_response_router(const http::request<http::string_b
         }
     }
 
+    // Check for Range header
+    std::string range_header;
+    auto range_it = request.find(http::field::range);
+    if (range_it != request.end()) {
+        range_header = std::string(range_it->value());
+    }
+
     // If target parameter exists, try to serve from cache
     if (!target.empty()) {
         // Request has target parameter (e.g., /?target=/debian/pool/...)
         std::string target_path = (target[0] == '/') ? target : "/" + target;
-        auto file_response = m_cache.get_or_fetch(target_path, request.version());
+
+        std::shared_ptr<http::response<http::file_body>> file_response;
+        if (!range_header.empty()) {
+            file_response = m_cache.get_or_fetch_with_range(target_path, request.version(), range_header);
+        } else {
+            file_response = m_cache.get_or_fetch(target_path, request.version());
+        }
+
         if (file_response) {
             return file_response;
         }
@@ -73,7 +87,14 @@ router_response Router::plain_response_router(const http::request<http::string_b
     if (path != "/" && !path.empty()) {
         // This is a direct file path request (e.g., /debian/pool/main/...)
         // Try to serve from cache
-        auto file_response = m_cache.get_or_fetch(path, request.version());
+
+        std::shared_ptr<http::response<http::file_body>> file_response;
+        if (!range_header.empty()) {
+            file_response = m_cache.get_or_fetch_with_range(path, request.version(), range_header);
+        } else {
+            file_response = m_cache.get_or_fetch(path, request.version());
+        }
+
         if (file_response) {
             return file_response;
         }
@@ -88,14 +109,6 @@ router_response Router::default_response_builder(const std::string& body_string,
     auto response = std::make_shared<http::response<http::string_body>>(status, version);
     response->body() = body_string;
     response->set("server", std::format("pacPrism/{}", pacprism::getVersionFull()));
-    response->prepare_payload();
-    return response;
-}
-
-router_response Router::redirect_builder(const std::string& location, size_t version) {
-    auto response = std::make_shared<http::response<http::empty_body>>(http::status::temporary_redirect, version);
-    response->set("server", std::format("pacPrism/{}", pacprism::getVersionFull()));
-    response->set(http::field::location, location);
     response->prepare_payload();
     return response;
 }

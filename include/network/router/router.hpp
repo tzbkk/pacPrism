@@ -37,9 +37,6 @@ private:
     // Default response builder.
     router_response default_response_builder(const std::string& body_string, std::size_t version, http::status status);
 
-    // Build redirect response
-    router_response redirect_builder(const std::string& location, size_t version);
-
 private:
     DHT_operation& m_dht;
     Validator& m_validator;
