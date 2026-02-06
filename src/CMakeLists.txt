@@ -47,10 +47,10 @@ configure_library_target(network_transmission)
 configure_library_target(network_router)
 configure_library_target(package_parser)
 
-# Add cxxopts include directory for console_parser
-target_include_directories(console_parser PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../cxxopts/include
-)
+# Link cxxopts for console_parser
+target_link_libraries(console_parser PRIVATE ${CXXOPTS_LIBRARIES})
+target_include_directories(console_parser PRIVATE ${CXXOPTS_INCLUDE_DIRS})
+target_compile_options(console_parser PRIVATE ${CXXOPTS_CFLAGS_OTHER})
 
 # Apply version information to library targets
 get_version_info(node_dht)

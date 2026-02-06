@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING**: Removed vcpkg dependency management, now using system packages
 - Removed all Windows-specific code (bcrypt, localtime_s)
 - Simplified build system: Makefile instead of CMake Presets and build scripts
-- Dependencies now installed via `apt`: libboost-dev, libssl-dev, nlohmann-json3-dev
+- Dependencies now installed via `apt`: libboost-dev, libssl-dev, nlohmann-json3-dev, libcxxopts-dev
+- Replaced git submodule cxxopts with system package (libcxxopts-dev)
 
 ### Removed
 - `CMakePresets.json` - vcpkg toolchain configuration
@@ -20,11 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `scripts/build.ps1` - Windows build script
 - `scripts/build.sh` - Legacy Linux build script
 - `cmake/PlatformConfig.cmake` - Windows-specific platform config
+- `cxxopts` git submodule - now using system package
 - Windows bcrypt SHA256 implementation (validator.cpp)
 - Windows localtime_s code (io.cpp)
+- `.github/workflows/cmake-multi-platform.yml` - old CI workflow
 
 ### Added
-- `Makefile` - Simple build system for Linux
+- `Makefile` - Simple build system for Linux with `deps` target
+- `.github/workflows/build.yml` - Simplified Linux-only CI workflow
 
 ---
 

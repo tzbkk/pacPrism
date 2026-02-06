@@ -102,7 +102,13 @@ sudo apt install -y \
     g++ \
     libboost-dev \
     libssl-dev \
-    nlohmann-json3-dev
+    nlohmann-json3-dev \
+    libcxxopts-dev
+```
+
+Or use:
+```bash
+make deps
 ```
 
 ### Build & Run

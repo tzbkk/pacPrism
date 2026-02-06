@@ -4,9 +4,21 @@
 CMAKE = cmake
 CMAKE_BUILD_DIR = build
 
-.PHONY: all clean release debug install
+.PHONY: all clean release debug install deps
 
 all: release
+
+deps:
+	@echo "Installing dependencies..."
+	@sudo apt update
+	@sudo apt install -y \
+		build-essential \
+		cmake \
+		g++ \
+		libboost-dev \
+		libssl-dev \
+		nlohmann-json3-dev \
+		libcxxopts-dev
 
 release:
 	@echo "Building pacPrism (Release)..."

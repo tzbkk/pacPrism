@@ -1,0 +1,42 @@
+name: Build pacPrism
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y \
+          build-essential \
+          cmake \
+          g++ \
+          libboost-dev \
+          libssl-dev \
+          nlohmann-json3-dev \
+          libcxxopts-dev
+
+    - name: Build (Release)
+      run: |
+        make clean || true
+        make release
+
+    - name: Build (Debug)
+      run: |
+        make clean
+        make debug
+
+    - name: Check binary
+      run: |
+        ls -lh build/bin/pacprism
+        ./build/bin/pacprism --help || true
