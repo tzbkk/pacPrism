@@ -76,85 +76,59 @@ pacPrism 致力于成为**系统软件包的分布式缓存层**，通过透明�
 ## 技术栈
 
 - **核心系统**: **C++23** - 高性能、低延迟网络处理
-- **网络库**: **Boost.Beast 1.89.0** - HTTP/1.1异步服务器
-- **构建系统**: **CMake 3.14+** - 跨平台模块化构建
-- **依赖管理**: **vcpkg** - 自动化依赖安装
+- **网络库**: **Boost.Beast**（来自 Debian 系统包）- HTTP/1.1 异步服务器
+- **构建系统**: **CMake 3.14+** - 模块化构建系统
+- **依赖**: 通过 apt 安装系统包（Boost、OpenSSL、nlohmann-json）
+- **平台**: Linux (Debian/Ubuntu)
 
 ## 快速开始
 
 ### 环境要求
-- **C++23 兼容编译器** (GCC 13+, Clang 14+, MSVC 19.36+)
-- **CMake 3.19+** (支持 Presets 功能)
-- **Visual Studio Build Tools** (仅Windows, MSVC 19.36+)
-- **vcpkg** 包管理器（需要本地安装）
+- **C++23 兼容编译器** (GCC 13+, Clang 14+)
+- **CMake 3.14+**
+- **Debian/Ubuntu 系统包**:
+  - `libboost-dev` (Boost.Beast HTTP 库)
+  - `libssl-dev` (OpenSSL SHA256 支持)
+  - `nlohmann-json3-dev` (JSON 库)
 
-### 安装 vcpkg
+### 安装依赖
 
-**首次安装 vcpkg**（如果尚未安装）：
+**Debian/Ubuntu:**
 ```bash
-# 将 vcpkg 克隆到您选择的目录（不要在这个项目内部）
-git clone https://github.com/Microsoft/vcpkg.git C:/vcpkg  # Linux/macOS 上使用 ~/vcpkg
-cd C:/vcpkg  # 或 cd ~/vcpkg
-.\bootstrap-vcpkg.bat  # Windows 上
-# ./bootstrap-vcpkg.sh  # Linux/macOS 上
-
-# 设置 VCPKG_ROOT 环境变量
-# Windows (PowerShell):
-$env:VCPKG_ROOT="C:/vcpkg"
-# 若要永久生效，添加到系统环境变量
-
-# Linux/macOS (bash/zsh):
-export VCPKG_ROOT=~/vcpkg
-# 添加到 ~/.bashrc 或 ~/.zshrc 以持久化
+sudo apt update
+sudo apt install -y \
+    build-essential \
+    cmake \
+    g++ \
+    libboost-dev \
+    libssl-dev \
+    nlohmann-json3-dev
 ```
 
-### 构建与运行（推荐）
+### 构建与运行
 
-**使用 CMake Presets**（跨平台）：
+**使用 Makefile（推荐）:**
 ```bash
-# 克隆仓库（不需要 --recurse-submodules）
+# 克隆仓库
 git clone https://github.com/tzbkk/pacPrism.git
 cd pacPrism
 
-# 确保 VCPKG_ROOT 环境变量已设置
-# Windows PowerShell: echo $env:VCPKG_ROOT
-# Linux/macOS: echo $VCPKG_ROOT
+# 构建 (Release 模式)
+make release
 
-# 配置并构建（Debug）
-cmake --preset debug
-cmake --build --preset debug
-
-# 或配置并构建（Release）
-cmake --preset release
-cmake --build --preset release
+# 或构建 (Debug 模式)
+make debug
 
 # 运行应用程序
 ./build/bin/pacprism
 ```
 
-### 构建与运行（传统方式）
-
-**Windows (PowerShell):**
-```powershell
-# 首先确保设置了 VCPKG_ROOT
-$env:VCPKG_ROOT="C:/vcpkg"  # 调整为你的 vcpkg 位置
-
-git clone https://github.com/tzbkk/pacPrism.git
-cd pacPrism
-.\scripts\build.ps1
-.\build\bin\pacprism.exe
-```
-
-**Linux/macOS (Bash):**
+**直接使用 CMake:**
 ```bash
-# 首先确保设置了 VCPKG_ROOT
-export VCPKG_ROOT=~/vcpkg  # 调整为你的 vcpkg 位置
-
-git clone https://github.com/tzbkk/pacPrism.git
-cd pacPrism
-chmod +x scripts/build.sh
-./scripts/build.sh
-./build/bin/pacprism
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j$(nproc)
+./bin/pacprism
 ```
 
 ## 文档

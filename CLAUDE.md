@@ -49,68 +49,49 @@ For detailed status, see [docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md).
 
 ### Building the Project (Recommended)
 
-**Using CMake Presets** (Cross-platform):
+**Using Makefile**:
 ```bash
-# List available presets
-cmake --list-presets
+# Build (Release mode)
+make release
 
-# Configure with debug preset
-cmake --preset debug
+# Build (Debug mode)
+make debug
 
-# Build with debug preset
-cmake --build --preset debug
+# Clean build directory
+make clean
 
-# Or configure and build with release preset
-cmake --preset release
-cmake --build --preset release
-
-# Run the application
-./build/bin/pacprism
+# Install system-wide
+sudo make install
 ```
 
-### Building the Project (Legacy)
+### Installing Dependencies
 
-**Windows (PowerShell):**
-```powershell
-.\scripts\build.ps1
-.\build\bin\pacprism.exe
-```
-
-**Linux/macOS (Bash):**
+**Debian/Ubuntu**:
 ```bash
-chmod +x scripts/build.sh
-./scripts/build.sh
-./build/bin/pacprism
+sudo apt install -y \
+    build-essential \
+    cmake \
+    g++ \
+    libboost-dev \
+    libssl-dev \
+    nlohmann-json3-dev
 ```
 
-### Automatic Dependency Management
+### Building with CMake Directly
 
-The build system automatically handles dependency installation via vcpkg (local installation):
-- **Boost.Beast 1.89.0** - HTTP/1.1 asynchronous server (includes Boost.Asio)
-- Requires VCPKG_ROOT environment variable to be set
-- vcpkg should be installed separately (not as a submodule)
-
-**Setting up vcpkg:**
 ```bash
-# Install vcpkg to a location of your choice
-git clone https://github.com/Microsoft/vcpkg.git C:/vcpkg  # or ~/vcpkg
-cd C:/vcpkg
-.\bootstrap-vcpkg.bat  # Windows: bootstrap-vcpkg.sh on Linux/macOS
-
-# Set VCPKG_ROOT environment variable
-# Windows PowerShell: $env:VCPKG_ROOT="C:/vcpkg"
-# Linux/macOS: export VCPKG_ROOT=~/vcpkg
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j$(nproc)
+./bin/pacprism
 ```
-
-**Windows Prerequisite**: Install Visual Studio Build Tools with C++ compiler first
 
 ## Codebase Structure
 
 ```
 pacPrism/
 ├── CMakeLists.txt              # Root CMake configuration
-├── CMakePresets.json           # CMake Presets for simplified builds
-├── vcpkg.json                  # vcpkg dependency management
+├── Makefile                    # Build automation
 ├── README.md                   # English project documentation
 ├── README_zh.md               # Chinese project documentation
 ├── CLAUDE.md                   # This file
@@ -118,8 +99,7 @@ pacPrism/
 ├── cmake/                      # CMake configuration modules
 │   ├── VersionConfig.cmake     # Version management configuration
 │   ├── LibraryConfig.cmake     # Library target configuration
-│   ├── BuildConfig.cmake       # Build system configuration
-│   └── version.hpp.in          # Version header file template
+│   └── BuildConfig.cmake       # Build system configuration
 │
 ├── src/                        # Main application source code
 │   ├── CMakeLists.txt          # Executable configuration

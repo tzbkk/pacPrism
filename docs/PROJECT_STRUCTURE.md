@@ -7,15 +7,15 @@
 ```
 pacPrism/
 ├── CMakeLists.txt              # 根 CMake 配置文件
-├── CMakePresets.json           # CMake Presets 配置 (推荐构建方式)
-├── vcpkg.json                  # vcpkg 依赖管理文件
+├── Makefile                    # Make 构建脚本
 ├── README.md                   # 英文项目说明文档
 ├── README_zh.md               # 中文项目说明文档
 ├── CLAUDE.md                   # Claude Code 项目指导文档
 │
-├── scripts/                    # 构建和配置脚本 (传统方式)
-│   ├── build.ps1              # Windows PowerShell 构建脚本
-│   └── build.sh               # Linux/macOS Bash 构建脚本
+├── cmake/                      # CMake 配置模块
+│   ├── VersionConfig.cmake     # 版本管理配置
+│   ├── LibraryConfig.cmake     # 库目标配置
+│   └── BuildConfig.cmake       # 构建系统配置
 │
 ├── cmake/                      # CMake 配置模块
 │   ├── VersionConfig.cmake     # 版本管理配置
@@ -235,32 +235,27 @@ boost-beast (第三方依赖，通过 vcpkg 安装)
 
 ## 构建流程
 
-### 推荐方式 (CMake Presets)
-1. **安装 vcpkg**:
+### 使用 Makefile（推荐）
+1. **安装依赖**:
    ```bash
-   git clone https://github.com/Microsoft/vcpkg.git C:/vcpkg  # 或 ~/vcpkg
-   cd C:/vcpkg
-   .\bootstrap-vcpkg.bat  # Windows: bootstrap-vcpkg.sh on Linux/macOS
-   export VCPKG_ROOT=C:/vcpkg  # 设置环境变量
+   sudo apt install build-essential cmake g++ libboost-dev libssl-dev nlohmann-json3-dev
    ```
 2. **克隆仓库**: `git clone https://github.com/tzbkk/pacPrism.git`
-3. **配置预设**: `cmake --preset debug` 或 `cmake --preset release`
-4. **构建项目**: `cmake --build --preset debug`
-5. **版本注入**: Git 信息和构建时间戳自动注入
+3. **构建**: `make release` 或 `make debug`
+4. **运行**: `./build/bin/pacprism`
 
-### 传统方式 (构建脚本)
-1. **环境检测**: 检查 Visual Studio Build Tools (Windows) 或 C++ 编译器
-2. **vcpkg 初始化**: 自动下载和构建 boost-beast 依赖
-3. **CMake 配置**: 生成构建文件，配置 toolchain
-4. **编译构建**: 构建所有库和可执行文件
-5. **版本注入**: Git 信息和构建时间戳自动注入
+### 直接使用 CMake
+1. **创建构建目录**: `mkdir build && cd build`
+2. **配置**: `cmake -DCMAKE_BUILD_TYPE=Release ..`
+3. **编译**: `make -j$(nproc)`
+4. **运行**: `./bin/pacprism`
 
 ## 技术栈
 
 - **编程语言**: C++23
-- **网络库**: Boost.Beast 1.89.0 (包含 Boost.Asio)
-- **构建系统**: CMake 3.19+ (Presets) + vcpkg
-- **包管理**: vcpkg (本地安装 + VCPKG_ROOT 环境变量 + manifest 模式)
+- **网络库**: Boost.Beast（来自 Debian 系统包）
+- **构建系统**: CMake 3.14+ + Make
+- **依赖管理**: apt (系统包)
 - **版本控制**: Git (集成版本信息)
 
 ---

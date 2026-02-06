@@ -69,19 +69,11 @@ configure_network_dependencies(network_transmission)
 configure_network_dependencies(network_router)
 
 # Link nlohmann_json for JSON support
-find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(node_dht PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(network_router PRIVATE nlohmann_json::nlohmann_json)
 
-# Link libraries for SHA256 support
-if(WIN32)
-    # Windows: Use bcrypt
-    target_link_libraries(node_validator PRIVATE bcrypt)
-else()
-    # Linux/Unix: Use OpenSSL
-    find_package(OpenSSL REQUIRED)
-    target_link_libraries(node_validator PRIVATE OpenSSL::Crypto)
-endif()
+# Link OpenSSL for SHA256 support
+target_link_libraries(node_validator PRIVATE OpenSSL::Crypto)
 
 # Link libraries
 target_link_libraries(network_router PRIVATE node_dht node_validator console_io)

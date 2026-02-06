@@ -76,85 +76,59 @@ pacPrism aims to be a **distributed caching layer for system packages** that enh
 ## Technology Stack
 
 - **Core System**: **C++23** - High performance, low latency network processing
-- **Network Library**: **Boost.Beast 1.89.0** - HTTP/1.1 asynchronous server
-- **Build System**: **CMake 3.14+** - Cross-platform modular build
-- **Dependency Management**: **vcpkg** - Automated dependency installation
+- **Network Library**: **Boost.Beast** (from Debian packages) - HTTP/1.1 asynchronous server
+- **Build System**: **CMake 3.14+** - Modular build system
+- **Dependencies**: System packages via apt (Boost, OpenSSL, nlohmann-json)
+- **Platform**: Linux (Debian/Ubuntu)
 
 ## Quick Start
 
 ### Requirements
-- **C++23 compatible compiler** (GCC 13+, Clang 14+, MSVC 19.36+)
-- **CMake 3.19+** (for Presets support)
-- **Visual Studio Build Tools** (Windows only, MSVC 19.36+)
-- **vcpkg** package manager (local installation required)
+- **C++23 compatible compiler** (GCC 13+, Clang 14+)
+- **CMake 3.14+**
+- **Debian/Ubuntu system packages**:
+  - `libboost-dev` (Boost.Beast HTTP library)
+  - `libssl-dev` (OpenSSL for SHA256)
+  - `nlohmann-json3-dev` (JSON library)
 
-### Setting up vcpkg
+### Install Dependencies
 
-**First-time vcpkg setup** (if you don't have vcpkg installed):
+**Debian/Ubuntu:**
 ```bash
-# Clone vcpkg to a location of your choice (NOT inside this project)
-git clone https://github.com/Microsoft/vcpkg.git C:/vcpkg  # or ~/vcpkg on Linux/macOS
-cd C:/vcpkg  # or cd ~/vcpkg
-.\bootstrap-vcpkg.bat  # on Windows
-# ./bootstrap-vcpkg.sh  # on Linux/macOS
-
-# Set VCPKG_ROOT environment variable
-# Windows (PowerShell):
-$env:VCPKG_ROOT="C:/vcpkg"
-# To make it permanent, add to System Environment Variables
-
-# Linux/macOS (bash/zsh):
-export VCPKG_ROOT=~/vcpkg
-# Add to ~/.bashrc or ~/.zshrc for persistence
+sudo apt update
+sudo apt install -y \
+    build-essential \
+    cmake \
+    g++ \
+    libboost-dev \
+    libssl-dev \
+    nlohmann-json3-dev
 ```
 
-### Build & Run (Recommended)
+### Build & Run
 
-**Using CMake Presets** (Cross-platform):
+**Using Makefile (Recommended):**
 ```bash
-# Clone repository (no --recurse-submodules needed)
+# Clone repository
 git clone https://github.com/tzbkk/pacPrism.git
 cd pacPrism
 
-# Make sure VCPKG_ROOT environment variable is set
-# Windows PowerShell: echo $env:VCPKG_ROOT
-# Linux/macOS: echo $VCPKG_ROOT
+# Build (Release mode)
+make release
 
-# Configure and build (Debug)
-cmake --preset debug
-cmake --build --preset debug
-
-# Or configure and build (Release)
-cmake --preset release
-cmake --build --preset release
+# Or build (Debug mode)
+make debug
 
 # Run the application
 ./build/bin/pacprism
 ```
 
-### Build & Run (Legacy)
-
-**Windows (PowerShell):**
-```powershell
-# Make sure VCPKG_ROOT is set first
-$env:VCPKG_ROOT="C:/vcpkg"  # Adjust path to your vcpkg location
-
-git clone https://github.com/tzbkk/pacPrism.git
-cd pacPrism
-.\scripts\build.ps1
-.\build\bin\pacprism.exe
-```
-
-**Linux/macOS (Bash):**
+**Using CMake directly:**
 ```bash
-# Make sure VCPKG_ROOT is set first
-export VCPKG_ROOT=~/vcpkg  # Adjust path to your vcpkg location
-
-git clone https://github.com/tzbkk/pacPrism.git
-cd pacPrism
-chmod +x scripts/build.sh
-./scripts/build.sh
-./build/bin/pacprism
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j$(nproc)
+./bin/pacprism
 ```
 
 ## Documentation

@@ -5,6 +5,31 @@ All notable changes to pacPrism will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **BREAKING**: Dropped Windows support, Linux-only (Debian/Ubuntu)
+- **BREAKING**: Removed vcpkg dependency management, now using system packages
+- Removed all Windows-specific code (bcrypt, localtime_s)
+- Simplified build system: Makefile instead of CMake Presets and build scripts
+- Dependencies now installed via `apt`: libboost-dev, libssl-dev, nlohmann-json3-dev
+
+### Removed
+- `CMakePresets.json` - vcpkg toolchain configuration
+- `vcpkg.json` - vcpkg dependency manifest
+- `scripts/build.ps1` - Windows build script
+- `scripts/build.sh` - Legacy Linux build script
+- `cmake/PlatformConfig.cmake` - Windows-specific platform config
+- Windows bcrypt SHA256 implementation (validator.cpp)
+- Windows localtime_s code (io.cpp)
+
+### Added
+- `Makefile` - Simple build system for Linux
+
+---
+
+## [0.1.0] - 2026-01-17
+
 ## [0.1.0] - 2026-01-17
 
 ### Added
@@ -37,13 +62,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HTTP status code expectation for DHT store operation (HTTP 201, not 200)
 
 ### Technical Details
-- **Build System**: CMake 3.14+ with CMake Presets
-- **Dependencies**: Boost.Beast 1.89.0 (includes Boost.Asio)
-- **Dependency Management**: vcpkg with automatic installation
+- **Build System**: CMake 3.14+ with Make
+- **Dependencies**: Boost.Beast (Debian system packages)
+- **Dependency Management**: apt (system packages)
 - **Language**: C++23
-- **Platform**: Cross-platform (Windows, Linux)
+- **Platform**: Linux (Debian/Ubuntu)
 
 ### Known Limitations
+- Linux-only (Debian/Ubuntu)
 - HTTP proxy returns HTTP 307 redirect instead of actual file content (does not work with APT)
 - DHT is single-process in-memory only (not truly distributed)
 - No P2P communication implementation

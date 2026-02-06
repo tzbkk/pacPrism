@@ -486,11 +486,7 @@ std::string FileCache::get_last_modified(const std::string& cache_path) const {
         // Format as HTTP date (RFC 1123)
         char buffer[80];
         std::tm tm;
-#ifdef _WIN32
-        localtime_s(&tm, &cftime);
-#else
         localtime_r(&cftime, &tm);
-#endif
         std::strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", &tm);
         return std::string(buffer);
     } catch (const std::exception& e) {
