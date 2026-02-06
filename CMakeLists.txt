@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find dependencies from system packages
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(nlohmann_json 3.10.0 REQUIRED)
 find_package(PkgConfig REQUIRED)
